@@ -1,9 +1,9 @@
 {
 	"FileVersion": 3,
 	"Version": 10,
-	"VersionName": "1.4.4",
-	"FriendlyName": "Unreal Claude",
-	"Description": "Claude Code CLI integration for Unreal Engine 5.7. Get AI coding assistance with built-in UE5.7 documentation context directly in the editor.",
+	"VersionName": "1.4.4-ue4.25",
+	"FriendlyName": "Unreal Claude (UE 4.25)",
+	"Description": "Claude Code CLI integration for Unreal Engine 4.25. UE 4.25 port of the UnrealClaude plugin.",
 	"Category": "Editor",
 	"CreatedBy": "Natali Caggiano",
 	"CreatedByURL": "https://github.com/Natfii",
@@ -15,14 +15,14 @@
 	"IsExperimentalVersion": false,
 	"Installed": false,
 	"EnabledByDefault": true,
-	"EngineVersion": "5.7.0",
+	"EngineVersion": "4.25.0",
 	"SupportedTargetPlatforms": [ "Win64", "Linux", "Mac" ],
 	"Modules": [
 		{
 			"Name": "UnrealClaude",
 			"Type": "Editor",
 			"LoadingPhase": "PostEngineInit",
-			"PlatformAllowList": [ "Win64", "Linux", "Mac" ]
+			"WhitelistPlatforms": [ "Win64", "Linux", "Mac" ]
 		}
 	],
 	"Plugins": [
@@ -30,10 +30,6 @@
 			"Name": "EditorScriptingUtilities",
 			"Enabled": true,
 			"Optional": true
-		},
-		{
-			"Name": "EnhancedInput",
-			"Enabled": true
 		}
 	]
 }

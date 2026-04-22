@@ -22,7 +22,7 @@
 
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "Factories/MaterialInstanceConstantFactoryNew.h"
-#include "UObject/SavePackage.h"
+// UObject/SavePackage.h exists only in UE 5.0+; 4.25 uses UObject/Package.h transitively.
 #include "Misc/PackageName.h"
 #include "EditorAssetLibrary.h"
 #include "Dom/JsonValue.h"
@@ -203,11 +203,13 @@ FMCPToolResult FMCPTool_Material::ExecuteCreateMaterialInstance(const TSharedRef
 
 	// Save the asset
 	FString PackageFileName = FPackageName::LongPackageNameToFilename(FullPackagePath, FPackageName::GetAssetPackageExtension());
-	FSavePackageArgs SaveArgs;
-	SaveArgs.TopLevelFlags = RF_Public | RF_Standalone;
-	FSavePackageResultStruct SaveResult = UPackage::Save(Package, MatInst, *PackageFileName, SaveArgs);
+	// UE 4.25 uses the positional UPackage::SavePackage API which returns bool.
+	const bool bSaveSucceeded = UPackage::SavePackage(
+		Package, MatInst,
+		RF_Public | RF_Standalone,
+		*PackageFileName);
 
-	if (!SaveResult.IsSuccessful())
+	if (!bSaveSucceeded)
 	{
 		return FMCPToolResult::Error(FString::Printf(TEXT("Material instance created but failed to save: %s"), *FullPackagePath));
 	}

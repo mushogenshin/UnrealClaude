@@ -20,6 +20,7 @@
 #include "WorkspaceMenuStructureModule.h"
 #include "Framework/Application/SlateApplication.h"
 #include "HttpServerModule.h"
+#include "EditorStyleSet.h"
 
 DEFINE_LOG_CATEGORY(LogUnrealClaude);
 
@@ -135,9 +136,9 @@ void FUnrealClaudeModule::StartupModule()
 				];
 		}))
 		.SetDisplayName(LOCTEXT("ClaudeTabTitle", "Claude Assistant"))
-		.SetTooltipText(LOCTEXT("ClaudeTabTooltip", "Open the Claude AI Assistant for UE5.7 development help"))
+		.SetTooltipText(LOCTEXT("ClaudeTabTooltip", "Open the Claude AI Assistant for UE 4.25 development help"))
 		.SetGroup(WorkspaceMenu::GetMenuStructure().GetToolsCategory())
-		.SetIcon(FSlateIcon(FAppStyle::GetAppStyleSetName(), "Icons.Help"));
+		.SetIcon(FSlateIcon(FEditorStyle::GetStyleSetName(), "Icons.Help"));
 	
 	// Register menus after engine init
 	UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FUnrealClaudeModule::RegisterMenus));
@@ -205,8 +206,8 @@ void FUnrealClaudeModule::RegisterMenus()
 			FUnrealClaudeCommands::Get().OpenClaudePanel,
 			PluginCommands,
 			LOCTEXT("OpenClaudeMenuItem", "Claude Assistant"),
-			LOCTEXT("OpenClaudeMenuItemTooltip", "Open the Claude AI Assistant for UE5.7 help (Ctrl+Shift+C)"),
-			FSlateIcon(FAppStyle::GetAppStyleSetName(), "Icons.Help")
+			LOCTEXT("OpenClaudeMenuItemTooltip", "Open the Claude AI Assistant for UE 4.25 help (Ctrl+Shift+C)"),
+			FSlateIcon(FEditorStyle::GetStyleSetName(), "Icons.Help")
 		);
 
 		Section.AddMenuEntryWithCommandList(
@@ -214,7 +215,7 @@ void FUnrealClaudeModule::RegisterMenus()
 			PluginCommands,
 			LOCTEXT("QuickAskMenuItem", "Quick Ask Claude"),
 			LOCTEXT("QuickAskMenuItemTooltip", "Quickly ask Claude a question (Ctrl+Alt+C)"),
-			FSlateIcon(FAppStyle::GetAppStyleSetName(), "Icons.Help")
+			FSlateIcon(FEditorStyle::GetStyleSetName(), "Icons.Help")
 		);
 	}
 	
@@ -227,7 +228,7 @@ void FUnrealClaudeModule::RegisterMenus()
 			FUnrealClaudeCommands::Get().OpenClaudePanel,
 			LOCTEXT("ClaudeToolbarButton", "Claude"),
 			LOCTEXT("ClaudeToolbarTooltip", "Open Claude Assistant (Ctrl+Shift+C)"),
-			FSlateIcon(FAppStyle::GetAppStyleSetName(), "Icons.Help")
+			FSlateIcon(FEditorStyle::GetStyleSetName(), "Icons.Help")
 		));
 	}
 }

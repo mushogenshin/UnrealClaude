@@ -20,11 +20,13 @@
 #include "Tools/MCPTool_CaptureViewport.h"
 #include "Tools/MCPTool_BlueprintQuery.h"
 #include "Tools/MCPTool_BlueprintModify.h"
-#include "Tools/MCPTool_AnimBlueprintModify.h"
+// MCPTool_AnimBlueprintModify.h removed: AnimBP editor APIs drift heavily
+// across UE versions; 4.25 port defers AnimBP modification until manually
+// validated against the 4.25 API.
 #include "Tools/MCPTool_AssetSearch.h"
 #include "Tools/MCPTool_AssetDependencies.h"
 #include "Tools/MCPTool_AssetReferencers.h"
-#include "Tools/MCPTool_EnhancedInput.h"
+// MCPTool_EnhancedInput.h removed: EnhancedInput plugin does not exist in UE 4.25
 #include "Tools/MCPTool_Character.h"
 #include "Tools/MCPTool_CharacterData.h"
 #include "Tools/MCPTool_Material.h"
@@ -86,18 +88,16 @@ void FMCPToolRegistry::RegisterBuiltinTools()
 	// Viewport capture
 	RegisterTool(MakeShared<FMCPTool_CaptureViewport>());
 
-	// Blueprint tools
+	// Blueprint tools (AnimBlueprintModify removed from 4.25 port — API drift)
 	RegisterTool(MakeShared<FMCPTool_BlueprintQuery>());
 	RegisterTool(MakeShared<FMCPTool_BlueprintModify>());
-	RegisterTool(MakeShared<FMCPTool_AnimBlueprintModify>());
 
 	// Asset tools
 	RegisterTool(MakeShared<FMCPTool_AssetSearch>());
 	RegisterTool(MakeShared<FMCPTool_AssetDependencies>());
 	RegisterTool(MakeShared<FMCPTool_AssetReferencers>());
 
-	// Enhanced Input tools
-	RegisterTool(MakeShared<FMCPTool_EnhancedInput>());
+	// Enhanced Input tool removed from 4.25 port (plugin not available).
 
 	// Character tools
 	RegisterTool(MakeShared<FMCPTool_Character>());
@@ -223,7 +223,7 @@ FMCPToolResult FMCPToolRegistry::ExecuteTool(const FString& ToolName, const TSha
 		// Use FTSTicker to dispatch to game thread at a safe point between subsystem ticks.
 		// AsyncTask(GameThread) can fire during streaming manager iteration, causing
 		// re-entrancy into LevelRenderAssetManagersLock (assertion crash).
-		FTSTicker::GetCoreTicker().AddTicker(TEXT("MCPTool_Execute"), 0.0f,
+		FTicker::GetCoreTicker().AddTicker(TEXT("MCPTool_Execute"), 0.0f,
 			[SharedResult, FoundTool, Params, CompletionEvent, bTaskCompleted](float) -> bool
 		{
 			*SharedResult = (*FoundTool)->Execute(Params);

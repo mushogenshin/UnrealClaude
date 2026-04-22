@@ -279,8 +279,9 @@ void FProjectContextManager::CountAssets()
 	CachedContext.BlueprintCount = 0;
 	for (const FAssetData& AssetData : AssetDataList)
 	{
-		if (AssetData.AssetClassPath.GetAssetName() == FName(TEXT("Blueprint")) ||
-			AssetData.AssetClassPath.GetAssetName() == FName(TEXT("WidgetBlueprint")))
+		// UE 4.25 stores asset class as FName AssetClass (no AssetClassPath yet).
+		if (AssetData.AssetClass == FName(TEXT("Blueprint")) ||
+			AssetData.AssetClass == FName(TEXT("WidgetBlueprint")))
 		{
 			CachedContext.BlueprintCount++;
 		}

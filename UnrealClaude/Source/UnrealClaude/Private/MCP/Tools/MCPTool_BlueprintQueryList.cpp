@@ -31,9 +31,9 @@ FMCPToolResult FMCPTool_BlueprintQuery::ExecuteList(const TSharedRef<FJsonObject
 	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
 	IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
 
-	// Build filter
+	// Build filter (UE 4.25: FARFilter uses ClassNames, not ClassPaths).
 	FARFilter Filter;
-	Filter.ClassPaths.Add(UBlueprint::StaticClass()->GetClassPathName());
+	Filter.ClassNames.Add(UBlueprint::StaticClass()->GetFName());
 	Filter.bRecursivePaths = true;
 	Filter.bRecursiveClasses = true;
 
@@ -98,7 +98,8 @@ FMCPToolResult FMCPTool_BlueprintQuery::ExecuteList(const TSharedRef<FJsonObject
 		// Build result object
 		TSharedPtr<FJsonObject> BPJson = MakeShared<FJsonObject>();
 		BPJson->SetStringField(TEXT("name"), AssetData.AssetName.ToString());
-		BPJson->SetStringField(TEXT("path"), AssetData.GetObjectPathString());
+		// UE 4.25: ObjectPath is FName; GetObjectPathString() was added in 5.1.
+		BPJson->SetStringField(TEXT("path"), AssetData.ObjectPath.ToString());
 		BPJson->SetStringField(TEXT("blueprint_type"), BlueprintType);
 
 		// Clean up parent class name (remove prefix)

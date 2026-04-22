@@ -182,10 +182,9 @@ namespace UnrealClaudeConstants
 			TEXT("execute_script"),
 			TEXT("cleanup_scripts"),
 			TEXT("get_script_history"),
-			// Blueprint tools
+			// Blueprint tools (anim_blueprint_modify removed from 4.25 port)
 			TEXT("blueprint_query"),
 			TEXT("blueprint_modify"),
-			TEXT("anim_blueprint_modify"),
 			// Asset tools
 			TEXT("asset_search"),
 			TEXT("asset_dependencies"),
@@ -194,8 +193,7 @@ namespace UnrealClaudeConstants
 			// Character tools
 			TEXT("character"),
 			TEXT("character_data"),
-			// Enhanced Input tools
-			TEXT("enhanced_input"),
+			// Enhanced Input tool removed from 4.25 port (plugin not available)
 			// Material tools
 			TEXT("material"),
 			// Level management tools

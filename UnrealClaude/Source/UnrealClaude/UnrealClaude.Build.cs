@@ -31,11 +31,12 @@ public class UnrealClaude : ModuleRules
 				"UnrealEd",
 				"ToolMenus",
 				"Projects",
-				"EditorFramework",
 				"WorkspaceMenuStructure"
+				// Note: EditorFramework module was split out of UnrealEd in UE 5.0
+				// and does not exist in 4.25. Removed for the 4.25 port.
 			}
 		);
-			
+
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
@@ -53,13 +54,15 @@ public class UnrealClaude : ModuleRules
 				"GraphEditor",
 				"AssetRegistry",
 				"AssetTools",
-				// Animation Blueprint manipulation
-				"AnimGraph",
-				"AnimGraphRuntime",
+				// Animation Blueprint manipulation modules removed from 4.25 port
+				// (AnimGraph/AnimGraphRuntime editor helpers drift heavily across
+				// engine versions — AnimBP MCP tools are excluded from v1).
 				// Asset saving
-				"EditorScriptingUtilities",
-				// Enhanced Input
-				"EnhancedInput"
+				"EditorScriptingUtilities"
+				// Note: EnhancedInput plugin does not exist in UE 4.25
+				// (introduced as experimental in 4.26). Input MCP tool is
+				// removed from the 4.25 port — reimplement against UInputSettings
+				// if needed.
 			}
 		);
 

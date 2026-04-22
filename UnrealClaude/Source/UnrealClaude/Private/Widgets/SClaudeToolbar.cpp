@@ -7,7 +7,7 @@
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/SNullWidget.h"
-#include "Styling/AppStyle.h"
+#include "EditorStyleSet.h"
 
 #define LOCTEXT_NAMESPACE "UnrealClaude"
 
@@ -27,7 +27,7 @@ void SClaudeToolbar::Construct(const FArguments& InArgs)
 	ChildSlot
 	[
 		SNew(SBorder)
-		.BorderImage(FAppStyle::GetBrush("ToolPanel.GroupBorder"))
+		.BorderImage(FEditorStyle::GetBrush("ToolPanel.GroupBorder"))
 		.Padding(FMargin(8.0f, 4.0f))
 		[
 			SNew(SHorizontalBox)
@@ -39,7 +39,7 @@ void SClaudeToolbar::Construct(const FArguments& InArgs)
 			[
 				SNew(STextBlock)
 				.Text(LOCTEXT("Title", "Claude Assistant"))
-				.TextStyle(FAppStyle::Get(), "LargeText")
+				.TextStyle(FEditorStyle::Get(), "LargeText")
 			]
 
 			+ SHorizontalBox::Slot()
@@ -48,7 +48,8 @@ void SClaudeToolbar::Construct(const FArguments& InArgs)
 				SNullWidget::NullWidget
 			]
 
-			// UE5.7 Context checkbox
+			// UE 4.25 engine-context checkbox (internal field names kept as UE57 for
+			// binary compatibility with existing saved sessions).
 			+ SHorizontalBox::Slot()
 			.AutoWidth()
 			.VAlign(VAlign_Center)
@@ -57,10 +58,10 @@ void SClaudeToolbar::Construct(const FArguments& InArgs)
 				SNew(SCheckBox)
 				.IsChecked_Lambda([this]() { return bUE57ContextEnabled.Get() ? ECheckBoxState::Checked : ECheckBoxState::Unchecked; })
 				.OnCheckStateChanged_Lambda([this](ECheckBoxState NewState) { OnUE57ContextChanged.ExecuteIfBound(NewState == ECheckBoxState::Checked); })
-				.ToolTipText(LOCTEXT("UE57ContextTip", "Include Unreal Engine 5.7 context in prompts"))
+				.ToolTipText(LOCTEXT("UE425ContextTip", "Include Unreal Engine 4.25 context in prompts"))
 				[
 					SNew(STextBlock)
-					.Text(LOCTEXT("UE57Context", "UE5.7 Context"))
+					.Text(LOCTEXT("UE425Context", "UE 4.25 Context"))
 				]
 			]
 

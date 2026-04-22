@@ -164,7 +164,8 @@ private:
 	/** Tool call IDs in current group (for showing/hiding labels on transition) */
 	TArray<FString> ToolGroupCallIds;
 
-	/** Include UE5.7 context in prompts */
+	/** Include UE 4.25 engine context in prompts (field name kept for binary
+	 *  compatibility with existing session files — do not rename to bIncludeUE425Context). */
 	bool bIncludeUE57Context = true;
 
 	/** Include project context in prompts */

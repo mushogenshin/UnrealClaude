@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Framework/Commands/Commands.h"
-#include "Styling/AppStyle.h"
+#include "EditorStyleSet.h"
 
 /**
  * Editor commands for the Unreal Claude plugin
@@ -17,7 +17,7 @@ public:
 			TEXT("UnrealClaude"),
 			NSLOCTEXT("Contexts", "UnrealClaude", "Unreal Claude"),
 			NAME_None,
-			FAppStyle::GetAppStyleSetName())
+			FEditorStyle::GetStyleSetName())
 	{
 	}
 

@@ -31,8 +31,8 @@ FMCPToolResult FMCPTool_AssetReferencers::Execute(const TSharedRef<FJsonObject>&
 		PackagePath = FPackageName::ObjectPathToPackageName(AssetPath);
 	}
 
-	// Verify the asset exists
-	FAssetData AssetData = AssetRegistry.GetAssetByObjectPath(FSoftObjectPath(AssetPath));
+	// Verify the asset exists (UE 4.25: GetAssetByObjectPath takes FName, not FSoftObjectPath)
+	FAssetData AssetData = AssetRegistry.GetAssetByObjectPath(FName(*AssetPath));
 	if (!AssetData.IsValid())
 	{
 		// Try with package name
@@ -45,24 +45,13 @@ FMCPToolResult FMCPTool_AssetReferencers::Execute(const TSharedRef<FJsonObject>&
 		AssetData = AssetsInPackage[0];
 	}
 
-	// Query referencers
+	// Query referencers (UE 4.25 uses EAssetRegistryDependencyType, not UE::AssetRegistry).
 	TArray<FName> Referencers;
+	const EAssetRegistryDependencyType::Type RefType = bIncludeSoft
+		? EAssetRegistryDependencyType::Packages
+		: EAssetRegistryDependencyType::Hard;
 
-	// Build dependency query flags - construct FDependencyQuery from EDependencyQuery enum
-	UE::AssetRegistry::FDependencyQuery QueryFlags;
-	if (!bIncludeSoft)
-	{
-		// Only hard references
-		QueryFlags = UE::AssetRegistry::FDependencyQuery(UE::AssetRegistry::EDependencyQuery::Hard);
-	}
-	// else: default FDependencyQuery() returns all references (no requirements)
-
-	AssetRegistry.GetReferencers(
-		FName(*PackagePath),
-		Referencers,
-		UE::AssetRegistry::EDependencyCategory::Package,
-		QueryFlags
-	);
+	AssetRegistry.GetReferencers(FName(*PackagePath), Referencers, RefType);
 
 	// Build filtered list (skip engine/script packages)
 	TArray<FName> FilteredRefs;
@@ -97,7 +86,8 @@ FMCPToolResult FMCPTool_AssetReferencers::Execute(const TSharedRef<FJsonObject>&
 		AssetRegistry.GetAssetsByPackageName(RefPath, RefAssets);
 		if (RefAssets.Num() > 0)
 		{
-			RefJson->SetStringField(TEXT("class"), RefAssets[0].AssetClassPath.GetAssetName().ToString());
+			// UE 4.25 uses FName AssetClass (not FTopLevelAssetPath AssetClassPath from 5.1+).
+			RefJson->SetStringField(TEXT("class"), RefAssets[0].AssetClass.ToString());
 			RefJson->SetStringField(TEXT("name"), RefAssets[0].AssetName.ToString());
 		}
 

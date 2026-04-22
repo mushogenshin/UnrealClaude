@@ -13,7 +13,7 @@
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/SOverlay.h"
-#include "Styling/AppStyle.h"
+#include "EditorStyleSet.h"
 #include "Brushes/SlateDynamicImageBrush.h"
 #include "HAL/PlatformApplicationMisc.h"
 #include "Misc/FileHelper.h"
@@ -62,7 +62,7 @@ void SClaudeInputArea::Construct(const FArguments& InArgs)
 					+ SScrollBox::Slot()
 					[
 						SAssignNew(InputTextBox, SMultiLineEditableTextBox)
-						.HintText(LOCTEXT("InputHint", "Ask Claude about Unreal Engine 5.7... (Shift+Enter for newline)"))
+						.HintText(LOCTEXT("InputHint", "Ask Claude about Unreal Engine 4.25... (Shift+Enter for newline)"))
 						.AutoWrapText(true)
 						.AllowMultiLine(true)
 						.OnTextChanged(this, &SClaudeInputArea::HandleTextChanged)
@@ -100,7 +100,7 @@ void SClaudeInputArea::Construct(const FArguments& InArgs)
 					SNew(SButton)
 					.Text_Lambda([this]() { return bIsWaiting.Get() ? LOCTEXT("Cancel", "Cancel") : LOCTEXT("Send", "Send"); })
 					.OnClicked(this, &SClaudeInputArea::HandleSendCancelClicked)
-					.ButtonStyle(FAppStyle::Get(), "PrimaryButton")
+					.ButtonStyle(FEditorStyle::Get(), "PrimaryButton")
 				]
 			]
 		]
@@ -121,7 +121,7 @@ void SClaudeInputArea::Construct(const FArguments& InArgs)
 				}
 				return FText::GetEmpty();
 			})
-			.TextStyle(FAppStyle::Get(), "SmallText")
+			.TextStyle(FEditorStyle::Get(), "SmallText")
 			.ColorAndOpacity(FSlateColor(FLinearColor(0.5f, 0.5f, 0.5f)))
 		]
 	];
@@ -337,7 +337,7 @@ void SClaudeInputArea::RebuildImagePreviewStrip()
 				+ SOverlay::Slot()
 				[
 					SNew(SBorder)
-					.BorderImage(FAppStyle::GetBrush("ToolPanel.GroupBorder"))
+					.BorderImage(FEditorStyle::GetBrush("ToolPanel.GroupBorder"))
 					.HAlign(HAlign_Fill)
 					.VAlign(VAlign_Fill)
 					[
@@ -359,7 +359,7 @@ void SClaudeInputArea::RebuildImagePreviewStrip()
 						return HandleRemoveImageClicked(Index);
 					})
 					.ToolTipText(LOCTEXT("RemoveImageTip", "Remove this image"))
-					.ButtonStyle(FAppStyle::Get(), "SimpleButton")
+					.ButtonStyle(FEditorStyle::Get(), "SimpleButton")
 				]
 			]
 		];
@@ -375,7 +375,7 @@ void SClaudeInputArea::RebuildImagePreviewStrip()
 		.Text(FText::Format(LOCTEXT("ImageCount", "{0}/{1}"),
 			FText::AsNumber(AttachedImagePaths.Num()),
 			FText::AsNumber(MaxImagesPerMessage)))
-		.TextStyle(FAppStyle::Get(), "SmallText")
+		.TextStyle(FEditorStyle::Get(), "SmallText")
 		.ColorAndOpacity(FSlateColor(FLinearColor(0.7f, 0.7f, 0.7f)))
 	];
 }

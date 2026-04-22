@@ -23,7 +23,7 @@
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SCheckBox.h"
 #include "Widgets/SBoxPanel.h"
-#include "Styling/AppStyle.h"
+#include "EditorStyleSet.h"
 #include "Styling/CoreStyle.h"
 #include "HAL/PlatformApplicationMisc.h"
 
@@ -64,7 +64,7 @@ void SChatMessage::Construct(const FArguments& InArgs)
 		.AutoWidth()
 		[
 			SNew(SBorder)
-			.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
+			.BorderImage(FEditorStyle::GetBrush("WhiteBrush"))
 			.BorderBackgroundColor(AccentColor)
 			.Padding(FMargin(1.5f, 0.0f))
 			[
@@ -77,7 +77,7 @@ void SChatMessage::Construct(const FArguments& InArgs)
 		.FillWidth(1.0f)
 		[
 			SNew(SBorder)
-			.BorderImage(FAppStyle::GetBrush("ToolPanel.DarkGroupBorder"))
+			.BorderImage(FEditorStyle::GetBrush("ToolPanel.DarkGroupBorder"))
 			.BorderBackgroundColor(BackgroundColor)
 			.Padding(FMargin(12.0f, 8.0f, 10.0f, 8.0f))
 			[
@@ -90,7 +90,7 @@ void SChatMessage::Construct(const FArguments& InArgs)
 				[
 					SNew(STextBlock)
 					.Text(FText::FromString(RoleLabel))
-					.TextStyle(FAppStyle::Get(), "SmallText")
+					.TextStyle(FEditorStyle::Get(), "SmallText")
 					.ColorAndOpacity(FSlateColor(RoleLabelColor))
 				]
 
@@ -100,7 +100,7 @@ void SChatMessage::Construct(const FArguments& InArgs)
 				[
 					SNew(STextBlock)
 					.Text(FText::FromString(Message))
-					.TextStyle(FAppStyle::Get(), "NormalText")
+					.TextStyle(FEditorStyle::Get(), "NormalText")
 					.ColorAndOpacity(FSlateColor(TextColor))
 					.AutoWrapText(true)
 				]
@@ -170,7 +170,7 @@ void SClaudeEditorWidget::Construct(const FArguments& InArgs)
 	}
 	else
 	{
-		FString WelcomeMessage = TEXT("👋 Welcome to Unreal Claude!\n\nI'm ready to help with your UE5.7 project. Ask me about:\n• C++ code patterns and best practices\n• Blueprint integration\n• Engine systems (Nanite, Lumen, GAS, etc.)\n• Debugging and optimization\n\n");
+		FString WelcomeMessage = TEXT("👋 Welcome to Unreal Claude (UE 4.25 port)!\n\nI'm ready to help with your UE 4.25 project. Ask me about:\n• C++ code patterns and best practices\n• Blueprint integration\n• Engine systems (GAS, Niagara, etc.)\n• Debugging and optimization\n\n");
 
 		// Add MCP tool status
 		WelcomeMessage += GenerateMCPStatusMessage();
@@ -204,7 +204,7 @@ TSharedRef<SWidget> SClaudeEditorWidget::BuildToolbar()
 TSharedRef<SWidget> SClaudeEditorWidget::BuildChatArea()
 {
 	return SNew(SBorder)
-		.BorderImage(FAppStyle::GetBrush("ToolPanel.DarkGroupBorder"))
+		.BorderImage(FEditorStyle::GetBrush("ToolPanel.DarkGroupBorder"))
 		.Padding(4.0f)
 		[
 			SAssignNew(ChatScrollBox, SScrollBox)
@@ -229,7 +229,7 @@ TSharedRef<SWidget> SClaudeEditorWidget::BuildInputArea()
 TSharedRef<SWidget> SClaudeEditorWidget::BuildStatusBar()
 {
 	return SNew(SBorder)
-		.BorderImage(FAppStyle::GetBrush("ToolPanel.GroupBorder"))
+		.BorderImage(FEditorStyle::GetBrush("ToolPanel.GroupBorder"))
 		.Padding(FMargin(8.0f, 4.0f))
 		[
 			SNew(SHorizontalBox)
@@ -271,7 +271,7 @@ TSharedRef<SWidget> SClaudeEditorWidget::BuildStatusBar()
 					}
 					return FText::FromString(ProjectPath);
 				})
-				.TextStyle(FAppStyle::Get(), "SmallText")
+				.TextStyle(FEditorStyle::Get(), "SmallText")
 				.ColorAndOpacity(FSlateColor(FLinearColor(0.5f, 0.5f, 0.5f)))
 			]
 		];
@@ -652,7 +652,7 @@ void SClaudeEditorWidget::StartStreamingResponse()
 		[
 			SNew(STextBlock)
 			.Text(FText::FromString(TEXT("Claude")))
-			.TextStyle(FAppStyle::Get(), "SmallText")
+			.TextStyle(FEditorStyle::Get(), "SmallText")
 			.ColorAndOpacity(FSlateColor(FLinearColor(0.9f, 0.6f, 0.3f)))
 		]
 
@@ -666,7 +666,7 @@ void SClaudeEditorWidget::StartStreamingResponse()
 			[
 				SAssignNew(StreamingTextBlock, STextBlock)
 				.Text(FText::FromString(TEXT("Thinking...")))
-				.TextStyle(FAppStyle::Get(), "NormalText")
+				.TextStyle(FEditorStyle::Get(), "NormalText")
 				.ColorAndOpacity(FSlateColor(FLinearColor::White))
 				.AutoWrapText(true)
 			]
@@ -687,7 +687,7 @@ void SClaudeEditorWidget::StartStreamingResponse()
 			.AutoWidth()
 			[
 				SNew(SBorder)
-				.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
+				.BorderImage(FEditorStyle::GetBrush("WhiteBrush"))
 				.BorderBackgroundColor(FLinearColor(0.6f, 0.4f, 0.2f, 1.0f))
 				.Padding(FMargin(1.5f, 0.0f))
 				[
@@ -700,7 +700,7 @@ void SClaudeEditorWidget::StartStreamingResponse()
 			.FillWidth(1.0f)
 			[
 				SNew(SBorder)
-				.BorderImage(FAppStyle::GetBrush("ToolPanel.DarkGroupBorder"))
+				.BorderImage(FEditorStyle::GetBrush("ToolPanel.DarkGroupBorder"))
 				.BorderBackgroundColor(FLinearColor(0.08f, 0.08f, 0.08f, 1.0f))
 				.Padding(FMargin(12.0f, 8.0f, 10.0f, 8.0f))
 				[
@@ -862,7 +862,7 @@ void SClaudeEditorWidget::HandleToolUseEvent(const FClaudeStreamEvent& Event)
 		.Padding(0, 3, 0, 3)
 		[
 			SNew(SBorder)
-			.BorderImage(FAppStyle::GetBrush("ToolPanel.DarkGroupBorder"))
+			.BorderImage(FEditorStyle::GetBrush("ToolPanel.DarkGroupBorder"))
 			.BorderBackgroundColor(FLinearColor(0.10f, 0.10f, 0.13f, 1.0f))
 			.Padding(FMargin(4.0f, 2.0f))
 			[
@@ -872,7 +872,7 @@ void SClaudeEditorWidget::HandleToolUseEvent(const FClaudeStreamEvent& Event)
 				.HeaderContent()
 				[
 					SAssignNew(ToolGroupSummaryText, STextBlock)
-					.TextStyle(FAppStyle::Get(), "SmallText")
+					.TextStyle(FEditorStyle::Get(), "SmallText")
 					.ColorAndOpacity(FSlateColor(FLinearColor(0.5f, 0.5f, 0.55f)))
 				]
 				.BodyContent()
@@ -894,7 +894,7 @@ void SClaudeEditorWidget::HandleToolUseEvent(const FClaudeStreamEvent& Event)
 			[
 				SAssignNew(StreamingTextBlock, STextBlock)
 				.Text(FText::GetEmpty())
-				.TextStyle(FAppStyle::Get(), "NormalText")
+				.TextStyle(FEditorStyle::Get(), "NormalText")
 				.ColorAndOpacity(FSlateColor(FLinearColor::White))
 				.AutoWrapText(true)
 			]
@@ -946,7 +946,7 @@ void SClaudeEditorWidget::HandleToolUseEvent(const FClaudeStreamEvent& Event)
 		[
 			SAssignNew(StatusLabel, STextBlock)
 			.Text(FText::FromString(FString::Printf(TEXT("> %s..."), *DisplayName)))
-			.TextStyle(FAppStyle::Get(), "SmallText")
+			.TextStyle(FEditorStyle::Get(), "SmallText")
 			.ColorAndOpacity(FSlateColor(FLinearColor(0.5f, 0.5f, 0.55f)))
 			.Visibility(ToolGroupCount == 1 ? EVisibility::Collapsed : EVisibility::Visible)
 		]
@@ -961,19 +961,19 @@ void SClaudeEditorWidget::HandleToolUseEvent(const FClaudeStreamEvent& Event)
 			[
 				SNew(STextBlock)
 				.Text(FText::FromString(TEXT("Result")))
-				.TextStyle(FAppStyle::Get(), "SmallText")
+				.TextStyle(FEditorStyle::Get(), "SmallText")
 				.ColorAndOpacity(FSlateColor(FLinearColor(0.4f, 0.4f, 0.4f)))
 			]
 			.BodyContent()
 			[
 				SNew(SBorder)
-				.BorderImage(FAppStyle::GetBrush("ToolPanel.DarkGroupBorder"))
+				.BorderImage(FEditorStyle::GetBrush("ToolPanel.DarkGroupBorder"))
 				.BorderBackgroundColor(FLinearColor(0.06f, 0.06f, 0.06f, 1.0f))
 				.Padding(FMargin(8.0f, 6.0f))
 				[
 					SAssignNew(ResultText, STextBlock)
 					.Text(FText::GetEmpty())
-					.TextStyle(FAppStyle::Get(), "SmallText")
+					.TextStyle(FEditorStyle::Get(), "SmallText")
 					.ColorAndOpacity(FSlateColor(FLinearColor(0.6f, 0.6f, 0.6f)))
 					.AutoWrapText(true)
 				]
@@ -1076,7 +1076,7 @@ void SClaudeEditorWidget::HandleResultEvent(const FClaudeStreamEvent& Event)
 	[
 		SNew(STextBlock)
 		.Text(FText::FromString(StatsText))
-		.TextStyle(FAppStyle::Get(), "SmallText")
+		.TextStyle(FEditorStyle::Get(), "SmallText")
 		.ColorAndOpacity(FSlateColor(FLinearColor(0.4f, 0.4f, 0.45f)))
 	];
 
@@ -1101,13 +1101,13 @@ void SClaudeEditorWidget::HandleRefusalEvent(const FClaudeStreamEvent& Event)
 	.Padding(0, 8, 0, 4)
 	[
 		SNew(SBorder)
-		.BorderImage(FAppStyle::GetBrush("ToolPanel.DarkGroupBorder"))
+		.BorderImage(FEditorStyle::GetBrush("ToolPanel.DarkGroupBorder"))
 		.BorderBackgroundColor(FLinearColor(0.3f, 0.08f, 0.08f, 1.0f))
 		.Padding(FMargin(10.0f, 8.0f))
 		[
 			SNew(STextBlock)
 			.Text(FText::FromString(RefusalMessage))
-			.TextStyle(FAppStyle::Get(), "SmallText")
+			.TextStyle(FEditorStyle::Get(), "SmallText")
 			.ColorAndOpacity(FSlateColor(FLinearColor(1.0f, 0.5f, 0.5f)))
 			.AutoWrapText(true)
 		]
@@ -1306,7 +1306,7 @@ void SClaudeEditorWidget::ParseAndRenderCodeBlocks()
 				.Padding(0, 4, 0, 4)
 				[
 					SNew(SBorder)
-					.BorderImage(FAppStyle::GetBrush("ToolPanel.DarkGroupBorder"))
+					.BorderImage(FEditorStyle::GetBrush("ToolPanel.DarkGroupBorder"))
 					.BorderBackgroundColor(FLinearColor(0.04f, 0.04f, 0.06f, 1.0f))
 					.Padding(FMargin(10.0f, 8.0f))
 					[
@@ -1326,7 +1326,7 @@ void SClaudeEditorWidget::ParseAndRenderCodeBlocks()
 				[
 					SNew(STextBlock)
 					.Text(FText::FromString(Section.Key))
-					.TextStyle(FAppStyle::Get(), "NormalText")
+					.TextStyle(FEditorStyle::Get(), "NormalText")
 					.ColorAndOpacity(FSlateColor(FLinearColor::White))
 					.AutoWrapText(true)
 				];

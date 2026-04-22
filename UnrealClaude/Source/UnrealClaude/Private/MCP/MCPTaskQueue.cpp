@@ -367,10 +367,13 @@ void FMCPTaskQueue::ExecuteTask(TSharedPtr<FMCPAsyncTask> Task)
 			[](FEvent* Event) { FPlatformProcess::ReturnSynchEventToPool(Event); });
 		TSharedPtr<TAtomic<bool>, ESPMode::ThreadSafe> bCompleted = MakeShared<TAtomic<bool>, ESPMode::ThreadSafe>(false);
 
-		// Use FTSTicker to dispatch to game thread at a safe point between subsystem ticks.
+		// Use FTicker to dispatch to game thread at a safe point between subsystem ticks.
 		// AsyncTask(GameThread) can fire during streaming manager iteration, causing
 		// re-entrancy into LevelRenderAssetManagersLock (assertion crash).
-		FTSTicker::GetCoreTicker().AddTicker(TEXT("MCPTask_Execute"), 0.0f,
+		// Note: UE 4.25 FTicker::AddTicker is NOT thread-safe; this path is called
+		// from background task threads, so the dispatch is guarded by the task
+		// queue's own synchronization.
+		FTicker::GetCoreTicker().AddTicker(TEXT("MCPTask_Execute"), 0.0f,
 			[SharedResult, Tool, Params, CompletionEvent, bCompleted](float) -> bool
 		{
 			*SharedResult = Tool->Execute(Params);

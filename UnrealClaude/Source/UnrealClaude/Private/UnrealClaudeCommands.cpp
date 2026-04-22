@@ -9,7 +9,7 @@ void FUnrealClaudeCommands::RegisterCommands()
 	UI_COMMAND(
 		OpenClaudePanel,
 		"Claude Assistant",
-		"Open the Claude AI Assistant panel for UE5.7 help",
+		"Open the Claude AI Assistant panel for UE 4.25 help",
 		EUserInterfaceActionType::Button,
 		FInputChord()
 	);

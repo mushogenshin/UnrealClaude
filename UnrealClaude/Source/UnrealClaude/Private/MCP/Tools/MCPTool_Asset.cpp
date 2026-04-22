@@ -8,7 +8,7 @@
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetRegistry/IAssetRegistry.h"
 #include "EditorAssetLibrary.h"
-#include "UObject/SavePackage.h"
+// UObject/SavePackage.h exists only in UE 5.0+; 4.25 uses UObject/Package.h transitively.
 #include "Misc/PackageName.h"
 #include "UObject/PropertyAccessUtil.h"
 #include "Engine/SkeletalMesh.h"
@@ -206,11 +206,11 @@ FMCPToolResult FMCPTool_Asset::ExecuteSaveAsset(const TSharedRef<FJsonObject>& P
 			FPackageName::GetAssetPackageExtension()
 		);
 
-		FSavePackageArgs SaveArgs;
-		SaveArgs.TopLevelFlags = RF_Public | RF_Standalone;
-		FSavePackageResultStruct SaveResult = UPackage::Save(Package, Asset, *PackageFileName, SaveArgs);
-
-		bWasSaved = SaveResult.IsSuccessful();
+		// UE 4.25 uses the positional UPackage::SavePackage API which returns bool.
+		bWasSaved = UPackage::SavePackage(
+			Package, Asset,
+			RF_Public | RF_Standalone,
+			*PackageFileName);
 		if (!bWasSaved)
 		{
 			return FMCPToolResult::Error(FString::Printf(TEXT("Failed to save asset: %s"), *AssetPath));
@@ -321,10 +321,10 @@ FMCPToolResult FMCPTool_Asset::ExecuteListAssets(const TSharedRef<FJsonObject>& 
 			break;
 		}
 
-		// Apply class filter if specified
+		// Apply class filter if specified (UE 4.25 stores class as FName AssetClass).
 		if (!ClassFilter.IsEmpty())
 		{
-			FString AssetClassName = AssetData.AssetClassPath.GetAssetName().ToString();
+			FString AssetClassName = AssetData.AssetClass.ToString();
 			if (!AssetClassName.Contains(ClassFilter))
 			{
 				continue;
@@ -333,8 +333,9 @@ FMCPToolResult FMCPTool_Asset::ExecuteListAssets(const TSharedRef<FJsonObject>& 
 
 		TSharedPtr<FJsonObject> AssetObj = MakeShared<FJsonObject>();
 		AssetObj->SetStringField(TEXT("name"), AssetData.AssetName.ToString());
-		AssetObj->SetStringField(TEXT("path"), AssetData.GetObjectPathString());
-		AssetObj->SetStringField(TEXT("class"), AssetData.AssetClassPath.GetAssetName().ToString());
+		// UE 4.25: ObjectPath is FName; GetObjectPathString() was added in 5.1.
+		AssetObj->SetStringField(TEXT("path"), AssetData.ObjectPath.ToString());
+		AssetObj->SetStringField(TEXT("class"), AssetData.AssetClass.ToString());
 		AssetObj->SetStringField(TEXT("package"), AssetData.PackageName.ToString());
 
 		ResultArray.Add(MakeShared<FJsonValueObject>(AssetObj));

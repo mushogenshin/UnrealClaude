@@ -63,45 +63,16 @@ FMCPToolResult FMCPTool_AssetSearch::Execute(const TSharedRef<FJsonObject>& Para
 	// Apply class filter
 	if (!ClassFilter.IsEmpty())
 	{
-		// Try to resolve class path - handle both full paths and short names
-		FString ClassPath = ClassFilter;
-
-		// If it's a short name, try common prefixes
-		if (!ClassPath.StartsWith(TEXT("/")))
+		// UE 4.25: FARFilter uses ClassNames (FName short class name), not ClassPaths.
+		// If the caller passes a full path like /Script/Engine.Blueprint, strip to the
+		// short class name so the registry can match it.
+		FString ClassName = ClassFilter;
+		int32 DotIndex = INDEX_NONE;
+		if (ClassName.FindLastChar('.', DotIndex))
 		{
-			// Try /Script/Engine first (common classes like StaticMesh, Blueprint)
-			UClass* FoundClass = FindObject<UClass>(nullptr, *FString::Printf(TEXT("/Script/Engine.%s"), *ClassFilter));
-
-			if (!FoundClass)
-			{
-				// Try /Script/CoreUObject
-				FoundClass = FindObject<UClass>(nullptr, *FString::Printf(TEXT("/Script/CoreUObject.%s"), *ClassFilter));
-			}
-
-			if (!FoundClass)
-			{
-				// Try /Script/Niagara for particle systems
-				FoundClass = FindObject<UClass>(nullptr, *FString::Printf(TEXT("/Script/Niagara.%s"), *ClassFilter));
-			}
-
-			if (!FoundClass)
-			{
-				// Try direct find
-				FoundClass = FindObject<UClass>(nullptr, *ClassFilter);
-			}
-
-			if (FoundClass)
-			{
-				ClassPath = FoundClass->GetClassPathName().ToString();
-			}
-			else
-			{
-				// Build path manually as fallback
-				ClassPath = FString::Printf(TEXT("/Script/Engine.%s"), *ClassFilter);
-			}
+			ClassName = ClassName.Mid(DotIndex + 1);
 		}
-
-		Filter.ClassPaths.Add(FTopLevelAssetPath(ClassPath));
+		Filter.ClassNames.Add(FName(*ClassName));
 	}
 
 	// Query assets
@@ -178,13 +149,15 @@ TSharedPtr<FJsonObject> FMCPTool_AssetSearch::AssetDataToJson(const FAssetData& 
 	TSharedPtr<FJsonObject> Json = MakeShared<FJsonObject>();
 
 	// Full object path (e.g., /Game/Characters/BP_Player.BP_Player)
-	Json->SetStringField(TEXT("path"), AssetData.GetObjectPathString());
+	// UE 4.25: FAssetData::ObjectPath is the FName object path; GetObjectPathString()
+	// was added in 5.1.
+	Json->SetStringField(TEXT("path"), AssetData.ObjectPath.ToString());
 
 	// Asset name without path
 	Json->SetStringField(TEXT("name"), AssetData.AssetName.ToString());
 
-	// Class name (short form)
-	Json->SetStringField(TEXT("class"), AssetData.AssetClassPath.GetAssetName().ToString());
+	// Class name (short form; UE 4.25 stores it as FName AssetClass).
+	Json->SetStringField(TEXT("class"), AssetData.AssetClass.ToString());
 
 	// Package path (folder containing the asset)
 	Json->SetStringField(TEXT("package_path"), AssetData.PackagePath.ToString());

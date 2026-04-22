@@ -31,8 +31,8 @@ FMCPToolResult FMCPTool_AssetDependencies::Execute(const TSharedRef<FJsonObject>
 		PackagePath = FPackageName::ObjectPathToPackageName(AssetPath);
 	}
 
-	// Verify the asset exists
-	FAssetData AssetData = AssetRegistry.GetAssetByObjectPath(FSoftObjectPath(AssetPath));
+	// Verify the asset exists (UE 4.25: GetAssetByObjectPath takes FName, not FSoftObjectPath)
+	FAssetData AssetData = AssetRegistry.GetAssetByObjectPath(FName(*AssetPath));
 	if (!AssetData.IsValid())
 	{
 		// Try with package name
@@ -45,24 +45,13 @@ FMCPToolResult FMCPTool_AssetDependencies::Execute(const TSharedRef<FJsonObject>
 		AssetData = AssetsInPackage[0];
 	}
 
-	// Query dependencies
+	// Query dependencies (UE 4.25 uses EAssetRegistryDependencyType, not UE::AssetRegistry).
 	TArray<FName> Dependencies;
+	const EAssetRegistryDependencyType::Type DepType = bIncludeSoft
+		? EAssetRegistryDependencyType::Packages
+		: EAssetRegistryDependencyType::Hard;
 
-	// Build dependency query flags - construct FDependencyQuery from EDependencyQuery enum
-	UE::AssetRegistry::FDependencyQuery QueryFlags;
-	if (!bIncludeSoft)
-	{
-		// Only hard dependencies
-		QueryFlags = UE::AssetRegistry::FDependencyQuery(UE::AssetRegistry::EDependencyQuery::Hard);
-	}
-	// else: default FDependencyQuery() returns all dependencies (no requirements)
-
-	AssetRegistry.GetDependencies(
-		FName(*PackagePath),
-		Dependencies,
-		UE::AssetRegistry::EDependencyCategory::Package,
-		QueryFlags
-	);
+	AssetRegistry.GetDependencies(FName(*PackagePath), Dependencies, DepType);
 
 	// Build filtered list (skip engine/script packages)
 	TArray<FName> FilteredDeps;
@@ -97,7 +86,8 @@ FMCPToolResult FMCPTool_AssetDependencies::Execute(const TSharedRef<FJsonObject>
 		AssetRegistry.GetAssetsByPackageName(DepPath, DepAssets);
 		if (DepAssets.Num() > 0)
 		{
-			DepJson->SetStringField(TEXT("class"), DepAssets[0].AssetClassPath.GetAssetName().ToString());
+			// UE 4.25 uses FName AssetClass (not FTopLevelAssetPath AssetClassPath from 5.1+).
+			DepJson->SetStringField(TEXT("class"), DepAssets[0].AssetClass.ToString());
 			DepJson->SetStringField(TEXT("name"), DepAssets[0].AssetName.ToString());
 		}
 

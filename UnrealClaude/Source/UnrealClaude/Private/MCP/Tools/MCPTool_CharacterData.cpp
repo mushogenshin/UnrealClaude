@@ -8,7 +8,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Engine/DataTable.h"
 #include "AssetRegistry/AssetRegistryModule.h"
-#include "UObject/SavePackage.h"
+// UObject/SavePackage.h exists only in UE 5.0+; 4.25 uses UObject/Package.h transitively.
 #include "Engine/World.h"
 #include "EngineUtils.h"
 
@@ -158,7 +158,8 @@ FMCPToolResult FMCPTool_CharacterData::ExecuteQueryCharacterData(const TSharedRe
 	IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
 
 	TArray<FAssetData> AssetList;
-	AssetRegistry.GetAssetsByClass(UCharacterConfigDataAsset::StaticClass()->GetClassPathName(), AssetList);
+	// UE 4.25: GetAssetsByClass takes an FName class name (short), not FTopLevelAssetPath.
+	AssetRegistry.GetAssetsByClass(UCharacterConfigDataAsset::StaticClass()->GetFName(), AssetList);
 
 	TArray<TSharedPtr<FJsonValue>> ResultArray;
 	int32 TotalMatches = 0;
@@ -223,7 +224,8 @@ FMCPToolResult FMCPTool_CharacterData::ExecuteQueryCharacterData(const TSharedRe
 
 		// Build result entry
 		TSharedPtr<FJsonObject> Entry = MakeShared<FJsonObject>();
-		Entry->SetStringField(TEXT("asset_path"), AssetData.GetObjectPathString());
+		// UE 4.25: ObjectPath is FName; GetObjectPathString() was added in 5.1.
+		Entry->SetStringField(TEXT("asset_path"), AssetData.ObjectPath.ToString());
 		Entry->SetStringField(TEXT("asset_name"), AssetData.AssetName.ToString());
 
 		// Load to get details
@@ -731,12 +733,13 @@ bool FMCPTool_CharacterData::SaveAsset(UObject* Asset, FString& OutError)
 	FString PackageFileName = FPackageName::LongPackageNameToFilename(
 		Package->GetName(), FPackageName::GetAssetPackageExtension());
 
-	FSavePackageArgs SaveArgs;
-	SaveArgs.TopLevelFlags = RF_Public | RF_Standalone;
+	// UE 4.25 uses the positional UPackage::SavePackage API which returns bool.
+	const bool bSaveSucceeded = UPackage::SavePackage(
+		Package, Asset,
+		RF_Public | RF_Standalone,
+		*PackageFileName);
 
-	FSavePackageResultStruct Result = UPackage::Save(Package, Asset, *PackageFileName, SaveArgs);
-
-	if (Result.Result != ESavePackageResult::Success)
+	if (!bSaveSucceeded)
 	{
 		OutError = FString::Printf(TEXT("Failed to save asset: %s"), *PackageFileName);
 		return false;

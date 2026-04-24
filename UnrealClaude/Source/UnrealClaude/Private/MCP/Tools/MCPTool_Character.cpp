@@ -137,9 +137,11 @@ FMCPToolResult FMCPTool_Character::ExecuteGetCharacterInfo(const TSharedRef<FJso
 	if (USkeletalMeshComponent* MeshComp = Character->GetMesh())
 	{
 		TSharedPtr<FJsonObject> MeshInfo = MakeShared<FJsonObject>();
-		if (MeshComp->GetSkeletalMeshAsset())
+		// UE 4.25: USkeletalMeshComponent exposes SkeletalMesh as a public
+		// UPROPERTY. GetSkeletalMeshAsset() is a 5.1+ accessor.
+		if (MeshComp->SkeletalMesh)
 		{
-			MeshInfo->SetStringField(TEXT("asset"), MeshComp->GetSkeletalMeshAsset()->GetPathName());
+			MeshInfo->SetStringField(TEXT("asset"), MeshComp->SkeletalMesh->GetPathName());
 		}
 		MeshInfo->SetBoolField(TEXT("visible"), MeshComp->IsVisible());
 		MeshInfo->SetNumberField(TEXT("num_bones"), MeshComp->GetNumBones());

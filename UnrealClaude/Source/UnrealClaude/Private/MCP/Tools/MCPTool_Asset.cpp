@@ -5,8 +5,8 @@
 #include "UnrealClaudeModule.h"
 #include "Editor.h"
 
-#include "AssetRegistry/AssetRegistryModule.h"
-#include "AssetRegistry/IAssetRegistry.h"
+#include "AssetRegistryModule.h"
+#include "IAssetRegistry.h"
 #include "EditorAssetLibrary.h"
 // UObject/SavePackage.h exists only in UE 5.0+; 4.25 uses UObject/Package.h transitively.
 #include "Misc/PackageName.h"
@@ -604,12 +604,24 @@ bool FMCPTool_Asset::SetStructPropertyValue(FStructProperty* StructProp, void* V
 		return false;
 	}
 
+	// UE 4.25 FVector/FRotator/FLinearColor fields are float; FJsonObject::
+	// TryGetNumberField has no float overload. Read into double, narrow to float.
+	// (5.x made these structs double-backed so the default overload matched.)
+	auto ReadFloatField = [&](const TCHAR* FieldName, float& OutValue)
+	{
+		double Tmp;
+		if ((*ObjVal)->TryGetNumberField(FieldName, Tmp))
+		{
+			OutValue = static_cast<float>(Tmp);
+		}
+	};
+
 	if (StructProp->Struct == TBaseStructure<FVector>::Get())
 	{
 		FVector Vec;
-		(*ObjVal)->TryGetNumberField(TEXT("x"), Vec.X);
-		(*ObjVal)->TryGetNumberField(TEXT("y"), Vec.Y);
-		(*ObjVal)->TryGetNumberField(TEXT("z"), Vec.Z);
+		ReadFloatField(TEXT("x"), Vec.X);
+		ReadFloatField(TEXT("y"), Vec.Y);
+		ReadFloatField(TEXT("z"), Vec.Z);
 		*reinterpret_cast<FVector*>(ValuePtr) = Vec;
 		return true;
 	}
@@ -617,9 +629,9 @@ bool FMCPTool_Asset::SetStructPropertyValue(FStructProperty* StructProp, void* V
 	if (StructProp->Struct == TBaseStructure<FRotator>::Get())
 	{
 		FRotator Rot;
-		(*ObjVal)->TryGetNumberField(TEXT("pitch"), Rot.Pitch);
-		(*ObjVal)->TryGetNumberField(TEXT("yaw"), Rot.Yaw);
-		(*ObjVal)->TryGetNumberField(TEXT("roll"), Rot.Roll);
+		ReadFloatField(TEXT("pitch"), Rot.Pitch);
+		ReadFloatField(TEXT("yaw"),   Rot.Yaw);
+		ReadFloatField(TEXT("roll"),  Rot.Roll);
 		*reinterpret_cast<FRotator*>(ValuePtr) = Rot;
 		return true;
 	}
@@ -627,10 +639,10 @@ bool FMCPTool_Asset::SetStructPropertyValue(FStructProperty* StructProp, void* V
 	if (StructProp->Struct == TBaseStructure<FLinearColor>::Get())
 	{
 		FLinearColor Color;
-		(*ObjVal)->TryGetNumberField(TEXT("r"), Color.R);
-		(*ObjVal)->TryGetNumberField(TEXT("g"), Color.G);
-		(*ObjVal)->TryGetNumberField(TEXT("b"), Color.B);
-		(*ObjVal)->TryGetNumberField(TEXT("a"), Color.A);
+		ReadFloatField(TEXT("r"), Color.R);
+		ReadFloatField(TEXT("g"), Color.G);
+		ReadFloatField(TEXT("b"), Color.B);
+		ReadFloatField(TEXT("a"), Color.A);
 		*reinterpret_cast<FLinearColor*>(ValuePtr) = Color;
 		return true;
 	}
@@ -692,7 +704,9 @@ TSharedPtr<FJsonObject> FMCPTool_Asset::BuildAssetInfoJson(UObject* Asset)
 	if (USkeletalMesh* SkelMesh = Cast<USkeletalMesh>(Asset))
 	{
 		TArray<TSharedPtr<FJsonValue>> MaterialsArr;
-		const TArray<FSkeletalMaterial>& Materials = SkelMesh->GetMaterials();
+		// UE 4.25: USkeletalMesh exposes Materials as a public UPROPERTY directly
+		// (no GetMaterials()/SetMaterials() accessors — those came in 4.27).
+		const TArray<FSkeletalMaterial>& Materials = SkelMesh->Materials;
 		for (int32 i = 0; i < Materials.Num(); ++i)
 		{
 			TSharedPtr<FJsonObject> MatObj = MakeShared<FJsonObject>();

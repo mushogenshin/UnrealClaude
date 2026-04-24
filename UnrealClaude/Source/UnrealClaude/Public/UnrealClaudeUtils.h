@@ -58,10 +58,15 @@ namespace UnrealClaudeJsonUtils
 			return DefaultValue;
 		}
 
+		// UE 4.25 FVector fields are float; FJsonObject::TryGetNumberField has
+		// overloads for double/int32/uint32/int64 but not float. Read into a
+		// double temporary and narrow. (In 5.x this code worked because FVector
+		// became double-backed and matched the default overload.)
 		FVector Result = DefaultValue;
-		JsonObj->TryGetNumberField(TEXT("x"), Result.X);
-		JsonObj->TryGetNumberField(TEXT("y"), Result.Y);
-		JsonObj->TryGetNumberField(TEXT("z"), Result.Z);
+		double Tmp;
+		if (JsonObj->TryGetNumberField(TEXT("x"), Tmp)) { Result.X = static_cast<float>(Tmp); }
+		if (JsonObj->TryGetNumberField(TEXT("y"), Tmp)) { Result.Y = static_cast<float>(Tmp); }
+		if (JsonObj->TryGetNumberField(TEXT("z"), Tmp)) { Result.Z = static_cast<float>(Tmp); }
 		return Result;
 	}
 
@@ -78,10 +83,12 @@ namespace UnrealClaudeJsonUtils
 			return DefaultValue;
 		}
 
+		// Same 4.25 float-vs-double issue as ExtractVector above.
 		FRotator Result = DefaultValue;
-		JsonObj->TryGetNumberField(TEXT("pitch"), Result.Pitch);
-		JsonObj->TryGetNumberField(TEXT("yaw"), Result.Yaw);
-		JsonObj->TryGetNumberField(TEXT("roll"), Result.Roll);
+		double Tmp;
+		if (JsonObj->TryGetNumberField(TEXT("pitch"), Tmp)) { Result.Pitch = static_cast<float>(Tmp); }
+		if (JsonObj->TryGetNumberField(TEXT("yaw"), Tmp))   { Result.Yaw   = static_cast<float>(Tmp); }
+		if (JsonObj->TryGetNumberField(TEXT("roll"), Tmp))  { Result.Roll  = static_cast<float>(Tmp); }
 		return Result;
 	}
 

@@ -20,7 +20,7 @@
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
 
-#include "AssetRegistry/AssetRegistryModule.h"
+#include "AssetRegistryModule.h"
 #include "Factories/MaterialInstanceConstantFactoryNew.h"
 // UObject/SavePackage.h exists only in UE 5.0+; 4.25 uses UObject/Package.h transitively.
 #include "Misc/PackageName.h"
@@ -156,7 +156,7 @@ FMCPToolResult FMCPTool_Material::ExecuteCreateMaterialInstance(const TSharedRef
 
 	// Create the package
 	FString FullPackagePath = PackagePath + AssetName;
-	UPackage* Package = CreatePackage(*FullPackagePath);
+	UPackage* Package = CreatePackage(nullptr, *FullPackagePath);
 	if (!Package)
 	{
 		return FMCPToolResult::Error(FString::Printf(TEXT("Failed to create package: %s"), *FullPackagePath));
@@ -326,7 +326,9 @@ FMCPToolResult FMCPTool_Material::ExecuteSetSkeletalMeshMaterial(const TSharedRe
 	}
 
 	// Check slot bounds
-	TArray<FSkeletalMaterial>& Materials = SkeletalMesh->GetMaterials();
+	// UE 4.25: USkeletalMesh::Materials is a public UPROPERTY (GetMaterials()
+	// accessor came in 4.27). Direct access is the supported pattern here.
+	TArray<FSkeletalMaterial>& Materials = SkeletalMesh->Materials;
 	if (MaterialSlot >= Materials.Num())
 	{
 		return FMCPToolResult::Error(FString::Printf(

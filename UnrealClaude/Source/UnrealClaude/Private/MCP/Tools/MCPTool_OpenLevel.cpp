@@ -183,16 +183,16 @@ FMCPToolResult FMCPTool_OpenLevel::ExecuteNew(const TSharedRef<FJsonObject>& Par
 		return FMCPToolResult::Error(TEXT("Editor engine not available."));
 	}
 
-	const TArray<FTemplateMapInfo>& Templates = GUnrealEd->GetTemplateMapInfos();
+	const TArray<FTemplateMapInfo>& Templates = GUnrealEd->TemplateMapInfos;
 	FString TemplateNameLower = TemplateName.ToLower();
 
 	const FTemplateMapInfo* FoundTemplate = nullptr;
 	for (const FTemplateMapInfo& Template : Templates)
 	{
 		// Match by display name or map package path
-		FString DisplayName = FPaths::GetBaseFilename(Template.Map.ToString());
+		FString DisplayName = FPaths::GetBaseFilename(Template.Map);
 		if (DisplayName.ToLower() == TemplateNameLower ||
-			Template.Map.ToString().ToLower().Contains(TemplateNameLower))
+			Template.Map.ToLower().Contains(TemplateNameLower))
 		{
 			FoundTemplate = &Template;
 			break;
@@ -208,7 +208,7 @@ FMCPToolResult FMCPTool_OpenLevel::ExecuteNew(const TSharedRef<FJsonObject>& Par
 
 	// Load the template map
 	FString TemplateFilename;
-	FString TemplatePackageName = FoundTemplate->Map.ToString();
+	FString TemplatePackageName = FoundTemplate->Map /* UE 4.25: FTemplateMapInfo::Map is FString (became FSoftObjectPath in later versions) */.ToString();
 	if (!FPackageName::TryConvertLongPackageNameToFilename(TemplatePackageName, TemplateFilename, FPackageName::GetMapPackageExtension()))
 	{
 		return FMCPToolResult::Error(FString::Printf(
@@ -292,7 +292,7 @@ FMCPToolResult FMCPTool_OpenLevel::ExecuteListTemplates()
 		return FMCPToolResult::Error(TEXT("Editor engine not available."));
 	}
 
-	const TArray<FTemplateMapInfo>& Templates = GUnrealEd->GetTemplateMapInfos();
+	const TArray<FTemplateMapInfo>& Templates = GUnrealEd->TemplateMapInfos;
 
 	TSharedPtr<FJsonObject> ResultData = MakeShared<FJsonObject>();
 	TArray<TSharedPtr<FJsonValue>> TemplateArray;
@@ -301,9 +301,9 @@ FMCPToolResult FMCPTool_OpenLevel::ExecuteListTemplates()
 	{
 		TSharedPtr<FJsonObject> TemplateObj = MakeShared<FJsonObject>();
 
-		FString DisplayName = FPaths::GetBaseFilename(Template.Map.ToString());
+		FString DisplayName = FPaths::GetBaseFilename(Template.Map);
 		TemplateObj->SetStringField(TEXT("name"), DisplayName);
-		TemplateObj->SetStringField(TEXT("mapPath"), Template.Map.ToString());
+		TemplateObj->SetStringField(TEXT("mapPath"), Template.Map);
 
 		TemplateArray.Add(MakeShared<FJsonValueObject>(TemplateObj));
 	}

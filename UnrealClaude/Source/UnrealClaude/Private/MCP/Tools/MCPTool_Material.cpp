@@ -566,12 +566,16 @@ bool FMCPTool_Material::ApplyParametersFromJson(UMaterialInstanceConstant* MatIn
 			const TSharedPtr<FJsonObject>* ColorObj;
 			if (Pair.Value->TryGetObject(ColorObj))
 			{
+				// UE 4.25 FLinearColor is float-backed; TryGetNumberField has no
+				// float overload. Read into double, narrow. (Same pattern as
+				// UnrealClaudeUtils::ExtractVector / MCPTool_Asset struct reads.)
 				FLinearColor Color;
-				(*ColorObj)->TryGetNumberField(TEXT("r"), Color.R);
-				(*ColorObj)->TryGetNumberField(TEXT("g"), Color.G);
-				(*ColorObj)->TryGetNumberField(TEXT("b"), Color.B);
 				Color.A = 1.0f;
-				(*ColorObj)->TryGetNumberField(TEXT("a"), Color.A);
+				double Tmp;
+				if ((*ColorObj)->TryGetNumberField(TEXT("r"), Tmp)) { Color.R = static_cast<float>(Tmp); }
+				if ((*ColorObj)->TryGetNumberField(TEXT("g"), Tmp)) { Color.G = static_cast<float>(Tmp); }
+				if ((*ColorObj)->TryGetNumberField(TEXT("b"), Tmp)) { Color.B = static_cast<float>(Tmp); }
+				if ((*ColorObj)->TryGetNumberField(TEXT("a"), Tmp)) { Color.A = static_cast<float>(Tmp); }
 
 				FString Error;
 				if (!SetVectorParameter(MatInst, Pair.Key, Color, Error))

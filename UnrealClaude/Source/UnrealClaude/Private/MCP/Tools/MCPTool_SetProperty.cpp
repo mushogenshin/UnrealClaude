@@ -293,7 +293,10 @@ bool FMCPTool_SetProperty::SetStructPropertyValue(FStructProperty* StructProp, v
 
 		// Generic string fallback: try UE's built-in ImportText for any struct type.
 		// Handles formats like "(R=255,G=0,B=0,A=255)" or "(X=1.0,Y=2.0,Z=3.0)".
-		const TCHAR* ImportResult = StructProp->ImportText_Direct(*StringValue, ValuePtr, nullptr, 0);
+		// UE 4.25: FStructProperty::ImportText_Direct doesn't exist. The
+		// suggested replacement (as per 4.25's own deprecation on ImportText_Static)
+		// is UScriptStruct::ImportText directly on the struct type.
+		const TCHAR* ImportResult = StructProp->Struct->ImportText(*StringValue, ValuePtr, nullptr, 0, nullptr, StructProp->Struct->GetName());
 		if (ImportResult != nullptr)
 		{
 			return true;
@@ -307,12 +310,24 @@ bool FMCPTool_SetProperty::SetStructPropertyValue(FStructProperty* StructProp, v
 		return false;
 	}
 
+	// UE 4.25 FVector/FRotator fields are float; TryGetNumberField has no
+	// float overload. Read into a double temporary and narrow. Same pattern
+	// as UnrealClaudeUtils::ExtractVector and MCPTool_Asset struct reads.
+	auto ReadFloatField = [&](const TCHAR* FieldName, float& OutValue)
+	{
+		double Tmp;
+		if ((*ObjVal)->TryGetNumberField(FieldName, Tmp))
+		{
+			OutValue = static_cast<float>(Tmp);
+		}
+	};
+
 	if (bIsVector)
 	{
 		FVector Vec;
-		(*ObjVal)->TryGetNumberField(TEXT("x"), Vec.X);
-		(*ObjVal)->TryGetNumberField(TEXT("y"), Vec.Y);
-		(*ObjVal)->TryGetNumberField(TEXT("z"), Vec.Z);
+		ReadFloatField(TEXT("x"), Vec.X);
+		ReadFloatField(TEXT("y"), Vec.Y);
+		ReadFloatField(TEXT("z"), Vec.Z);
 		*reinterpret_cast<FVector*>(ValuePtr) = Vec;
 		return true;
 	}
@@ -320,9 +335,9 @@ bool FMCPTool_SetProperty::SetStructPropertyValue(FStructProperty* StructProp, v
 	if (bIsRotator)
 	{
 		FRotator Rot;
-		(*ObjVal)->TryGetNumberField(TEXT("pitch"), Rot.Pitch);
-		(*ObjVal)->TryGetNumberField(TEXT("yaw"), Rot.Yaw);
-		(*ObjVal)->TryGetNumberField(TEXT("roll"), Rot.Roll);
+		ReadFloatField(TEXT("pitch"), Rot.Pitch);
+		ReadFloatField(TEXT("yaw"),   Rot.Yaw);
+		ReadFloatField(TEXT("roll"),  Rot.Roll);
 		*reinterpret_cast<FRotator*>(ValuePtr) = Rot;
 		return true;
 	}
@@ -352,21 +367,29 @@ bool FMCPTool_SetProperty::SetStructPropertyValue(FStructProperty* StructProp, v
 		return true;
 	}
 
-	// FLinearColor - uses float values (0.0-1.0)
+	// FLinearColor - uses float values (0.0-1.0).
+	// UE 4.25 float-vs-double narrowing applies to its R/G/B/A fields too.
 	// Accepts both uppercase (R,G,B,A) and lowercase (r,g,b,a) field names.
 	if (bIsLinearColor)
 	{
 		FLinearColor Color;
-		if (!(*ObjVal)->TryGetNumberField(TEXT("R"), Color.R))
-			(*ObjVal)->TryGetNumberField(TEXT("r"), Color.R);
-		if (!(*ObjVal)->TryGetNumberField(TEXT("G"), Color.G))
-			(*ObjVal)->TryGetNumberField(TEXT("g"), Color.G);
-		if (!(*ObjVal)->TryGetNumberField(TEXT("B"), Color.B))
-			(*ObjVal)->TryGetNumberField(TEXT("b"), Color.B);
-		if (!(*ObjVal)->TryGetNumberField(TEXT("A"), Color.A))
+		auto TryReadChannel = [&](const TCHAR* Upper, const TCHAR* Lower, float& OutValue) -> bool
 		{
-			if (!(*ObjVal)->TryGetNumberField(TEXT("a"), Color.A))
-				Color.A = 1.0f;
+			double Tmp;
+			if ((*ObjVal)->TryGetNumberField(Upper, Tmp) ||
+			    (*ObjVal)->TryGetNumberField(Lower, Tmp))
+			{
+				OutValue = static_cast<float>(Tmp);
+				return true;
+			}
+			return false;
+		};
+		TryReadChannel(TEXT("R"), TEXT("r"), Color.R);
+		TryReadChannel(TEXT("G"), TEXT("g"), Color.G);
+		TryReadChannel(TEXT("B"), TEXT("b"), Color.B);
+		if (!TryReadChannel(TEXT("A"), TEXT("a"), Color.A))
+		{
+			Color.A = 1.0f;
 		}
 		// Auto-normalize: if any color component > 1.5, assume 0-255 range
 		if (Color.R > 1.5f || Color.G > 1.5f || Color.B > 1.5f)

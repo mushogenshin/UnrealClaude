@@ -11,6 +11,10 @@
 #include "Factories/BlueprintFactory.h"
 #include "Logging/MessageLog.h"
 #include "Misc/UObjectToken.h"
+// UE 4.25: StringFwd.h gets included transitively (just the forward decl of
+// TStringBuilder), so explicit TStringBuilder<N> usages fail with "implicit
+// instantiation of undefined template" unless we pull in the real definition.
+#include "Misc/StringBuilder.h"
 #include "EdGraph/EdGraphNode.h"
 
 UBlueprint* FBlueprintLoader::LoadBlueprint(const FString& BlueprintPath, FString& OutError)
@@ -58,7 +62,9 @@ bool FBlueprintLoader::IsBlueprintEditable(UBlueprint* Blueprint, FString& OutEr
 		return false;
 	}
 
-	UPackage* Package = Blueprint->GetPackage();
+	// UE 4.25: UObject::GetPackage() doesn't exist yet; GetOutermost() returns
+	// the outermost UPackage, which is equivalent for our purpose.
+	UPackage* Package = Blueprint->GetOutermost();
 	if (!Package)
 	{
 		OutError = TEXT("Blueprint package is invalid");
@@ -73,10 +79,12 @@ bool FBlueprintLoader::IsBlueprintEditable(UBlueprint* Blueprint, FString& OutEr
 		return false;
 	}
 
-	// Block cooked packages
-	if (Package->HasAnyPackageFlags(PKG_Cooked))
+	// UE 4.25 has no PKG_Cooked flag (added in a later release). Use
+	// PKG_FilterEditorOnly as a reasonable proxy — cooked packages drop
+	// editor-only data and get this flag set during cook.
+	if (Package->HasAnyPackageFlags(PKG_FilterEditorOnly))
 	{
-		OutError = TEXT("Blueprint package is read-only (cooked)");
+		OutError = TEXT("Blueprint package is read-only (cooked / editor-only-filtered)");
 		return false;
 	}
 
@@ -266,35 +274,36 @@ UBlueprint* FBlueprintLoader::CreateBlueprint(
 		return nullptr;
 	}
 
-	// Create the package path
+	// Create the package path.
+	// UE 4.25: CreatePackage takes (InOuter, PackageName). The single-arg
+	// overload was introduced in 5.0 when the Outer parameter was removed.
 	FString FullPath = PackagePath / BlueprintName;
-	UPackage* Package = CreatePackage(*FullPath);
+	UPackage* Package = CreatePackage(nullptr, *FullPath);
 	if (!Package)
 	{
 		OutError = FString::Printf(TEXT("Failed to create package: %s"), *FullPath);
 		return nullptr;
 	}
 
-	// Create Blueprint factory
-	UBlueprintFactory* Factory = NewObject<UBlueprintFactory>();
-	Factory->ParentClass = ParentClass;
-	Factory->BlueprintType = BlueprintType;
-
-	// Create the Blueprint
-	UBlueprint* NewBlueprint = Cast<UBlueprint>(Factory->FactoryCreateNew(
-		UBlueprint::StaticClass(),
+	// UE 4.25's UBlueprintFactory has no BlueprintType field (added later),
+	// so we skip the factory path entirely and use FKismetEditorUtilities::
+	// CreateBlueprint, which takes BlueprintType directly and handles the same
+	// setup the factory would (class + generated-class setup, default graphs).
+	UBlueprint* NewBlueprint = FKismetEditorUtilities::CreateBlueprint(
+		ParentClass,
 		Package,
 		FName(*BlueprintName),
-		RF_Public | RF_Standalone,
-		nullptr,
-		GWarn
-	));
+		BlueprintType,
+		UBlueprint::StaticClass(),
+		UBlueprintGeneratedClass::StaticClass());
 
 	if (!NewBlueprint)
 	{
 		OutError = TEXT("Failed to create Blueprint");
 		return nullptr;
 	}
+
+	NewBlueprint->SetFlags(RF_Public | RF_Standalone);
 
 	// Mark package dirty
 	Package->MarkPackageDirty();

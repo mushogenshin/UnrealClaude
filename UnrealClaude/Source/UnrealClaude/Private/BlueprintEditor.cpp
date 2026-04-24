@@ -293,16 +293,12 @@ bool FBlueprintEditor::ParsePinType(
 		OutPinType.PinCategory = UEdGraphSchema_K2::PC_Int64;
 		return true;
 	}
-	if (CleanType == TEXT("float") || CleanType == TEXT("Float"))
+	if (CleanType == TEXT("float") || CleanType == TEXT("Float") ||
+	    CleanType == TEXT("double") || CleanType == TEXT("Double"))
 	{
-		OutPinType.PinCategory = UEdGraphSchema_K2::PC_Real;
-		OutPinType.PinSubCategory = UEdGraphSchema_K2::PC_Float;
-		return true;
-	}
-	if (CleanType == TEXT("double") || CleanType == TEXT("Double"))
-	{
-		OutPinType.PinCategory = UEdGraphSchema_K2::PC_Real;
-		OutPinType.PinSubCategory = UEdGraphSchema_K2::PC_Double;
+		// UE 4.25 predates the PC_Real/PC_Double split; all real-typed pins use
+		// PC_Float. Blueprint arithmetic is single-precision in 4.25.
+		OutPinType.PinCategory = UEdGraphSchema_K2::PC_Float;
 		return true;
 	}
 	if (CleanType == TEXT("byte") || CleanType == TEXT("uint8") || CleanType == TEXT("Byte"))
@@ -485,10 +481,10 @@ FString FBlueprintEditor::PinTypeToString(const FEdGraphPinType& PinType)
 	{
 		TypeName = TEXT("int64");
 	}
-	else if (PinType.PinCategory == UEdGraphSchema_K2::PC_Real)
+	else if (PinType.PinCategory == UEdGraphSchema_K2::PC_Float)
 	{
-		TypeName = (PinType.PinSubCategory == UEdGraphSchema_K2::PC_Double)
-			? TEXT("double") : TEXT("float");
+		// UE 4.25 has no double-precision BP pins; PC_Float covers both.
+		TypeName = TEXT("float");
 	}
 	else if (PinType.PinCategory == UEdGraphSchema_K2::PC_Byte)
 	{

@@ -2,6 +2,9 @@
 
 #include "BlueprintGraphEditor.h"
 #include "UnrealClaudeModule.h"
+// UE 4.25: AActor is only forward-declared via transitive includes; resolving
+// AActor::StaticClass() requires the complete type.
+#include "GameFramework/Actor.h"
 #include "Kismet2/BlueprintEditorUtils.h"
 #include "K2Node_FunctionEntry.h"
 #include "K2Node_Event.h"
@@ -538,9 +541,10 @@ TSharedPtr<FJsonObject> FBlueprintGraphEditor::SerializeNodeInfo(UEdGraphNode* N
 			{
 				TypeStr = TEXT("int32");
 			}
-			else if (Pin->PinType.PinCategory == UEdGraphSchema_K2::PC_Real)
+			else if (Pin->PinType.PinCategory == UEdGraphSchema_K2::PC_Float)
 			{
-				TypeStr = (Pin->PinType.PinSubCategory == UEdGraphSchema_K2::PC_Double) ? TEXT("double") : TEXT("float");
+				// UE 4.25: no PC_Real/PC_Double split; all real pins are PC_Float.
+				TypeStr = TEXT("float");
 			}
 			else if (Pin->PinType.PinCategory == UEdGraphSchema_K2::PC_String)
 			{

@@ -208,7 +208,9 @@ FMCPToolResult FMCPTool_OpenLevel::ExecuteNew(const TSharedRef<FJsonObject>& Par
 
 	// Load the template map
 	FString TemplateFilename;
-	FString TemplatePackageName = FoundTemplate->Map /* UE 4.25: FTemplateMapInfo::Map is FString (became FSoftObjectPath in later versions) */.ToString();
+	// UE 4.25: FTemplateMapInfo::Map is already an FString (later versions
+	// changed it to FSoftObjectPath, which is why the upstream code called .ToString()).
+	FString TemplatePackageName = FoundTemplate->Map;
 	if (!FPackageName::TryConvertLongPackageNameToFilename(TemplatePackageName, TemplateFilename, FPackageName::GetMapPackageExtension()))
 	{
 		return FMCPToolResult::Error(FString::Printf(

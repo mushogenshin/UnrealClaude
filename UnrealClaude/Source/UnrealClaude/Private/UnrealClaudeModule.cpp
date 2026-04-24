@@ -42,7 +42,10 @@ void FUnrealClaudeModule::StartupModule()
 		FUnrealClaudeCommands::Get().OpenClaudePanel,
 		FExecuteAction::CreateLambda([]()
 		{
-			FGlobalTabmanager::Get()->TryInvokeTab(ClaudeTabName);
+			// UE 4.25 has InvokeTab() only; TryInvokeTab (which gracefully
+			// handles failure) was added later. InvokeTab returns a
+			// TSharedRef<SDockTab>, so no need for nullability handling.
+			FGlobalTabmanager::Get()->InvokeTab(ClaudeTabName);
 		}),
 		FCanExecuteAction()
 	);

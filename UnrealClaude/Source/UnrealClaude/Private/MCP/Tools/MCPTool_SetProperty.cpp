@@ -427,7 +427,8 @@ bool FMCPTool_SetProperty::SetStructPropertyValue(FStructProperty* StructProp, v
 		}
 		TextRepresentation += TEXT(")");
 
-		const TCHAR* ImportResult = StructProp->ImportText_Direct(*TextRepresentation, ValuePtr, nullptr, 0);
+		// UE 4.25: same as the earlier call site — go through UScriptStruct::ImportText.
+		const TCHAR* ImportResult = StructProp->Struct->ImportText(*TextRepresentation, ValuePtr, nullptr, 0, nullptr, StructProp->Struct->GetName());
 		if (ImportResult != nullptr)
 		{
 			return true;

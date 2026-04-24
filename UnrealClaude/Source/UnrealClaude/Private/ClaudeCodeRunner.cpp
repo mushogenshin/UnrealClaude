@@ -17,6 +17,9 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "Serialization/JsonWriter.h"
+// UE 4.25: TCondensedJsonPrintPolicy lives in its own header and isn't pulled
+// in transitively via JsonWriter.h.
+#include "Policies/CondensedJsonPrintPolicy.h"
 #include "Dom/JsonObject.h"
 
 FClaudeCodeRunner::FClaudeCodeRunner()
@@ -1191,15 +1194,20 @@ bool FClaudeCodeRunner::MaybeFireSilenceWatchdog(double NowPlatformSeconds)
 
 bool FClaudeCodeRunner::CreateProcessPipes()
 {
-	// Create stdout pipe (we read from ReadPipe, child writes to WritePipe)
-	if (!FPlatformProcess::CreatePipe(ReadPipe, WritePipe, false))
+	// Create stdout pipe (we read from ReadPipe, child writes to WritePipe).
+	// UE 4.25: CreatePipe takes 2 args; the third `bWritePipeLocal` bool was
+	// added in 5.x. On Mac/Linux 4.25 both ends of the pipe default to
+	// non-inheritable correctly, so the old behaviour matches 5.x's `false`.
+	if (!FPlatformProcess::CreatePipe(ReadPipe, WritePipe))
 	{
 		UE_LOG(LogUnrealClaude, Error, TEXT("Failed to create stdout pipe"));
 		return false;
 	}
 
-	// Create stdin pipe (child reads from StdInReadPipe, we write to StdInWritePipe)
-	if (!FPlatformProcess::CreatePipe(StdInReadPipe, StdInWritePipe, true))
+	// Create stdin pipe (child reads from StdInReadPipe, we write to StdInWritePipe).
+	// 5.x uses `true` here to mark the write end as "local"; 4.25 has no such
+	// concept but the behaviour is equivalent — the write end is what we use.
+	if (!FPlatformProcess::CreatePipe(StdInReadPipe, StdInWritePipe))
 	{
 		UE_LOG(LogUnrealClaude, Error, TEXT("Failed to create stdin pipe"));
 		FPlatformProcess::ClosePipe(ReadPipe, WritePipe);

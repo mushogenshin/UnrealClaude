@@ -12,6 +12,7 @@ class SScrollBox;
 class SVerticalBox;
 class SClaudeInputArea;
 class SExpandableArea;
+class STextBlock; // UE 4.25: not forward-declared transitively; TSharedPtr<STextBlock> members below need it.
 
 /**
  * Chat message display widget

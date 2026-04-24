@@ -5,6 +5,10 @@
 #include "CoreMinimal.h"
 #include "HttpServerModule.h"
 #include "IHttpRouter.h"
+// UE 4.25: HttpServerModule.h no longer pulls in EHttpServerResponseCodes or
+// FHttpServerResponse transitively; the declarations used below require the
+// explicit header.
+#include "HttpServerResponse.h"
 #include "UnrealClaudeConstants.h"
 
 class FMCPToolRegistry;

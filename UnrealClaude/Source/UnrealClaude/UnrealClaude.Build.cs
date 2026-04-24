@@ -6,8 +6,15 @@ public class UnrealClaude : ModuleRules
 {
 	public UnrealClaude(ReadOnlyTargetRules Target) : base(Target)
 	{
+		// Stay on the engine's default C++14. Opting into C++17 triggered
+		// -Wc++11-narrowing errors in UHT-generated .gen.cpp files (STRUCT_OFFSET
+		// returns size_t; C++17 narrowing-in-init-list is stricter on newer clang).
+		// The only C++17 idiom the plugin relies on is namespace-scope `inline
+		// constexpr` / `inline const` variables, and those have been rewritten to
+		// `static ...` equivalents (see UnrealClaudeConstants.h).
+
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
-		
+
 		PublicIncludePaths.AddRange(
 			new string[] {
 			}

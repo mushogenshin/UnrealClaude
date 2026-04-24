@@ -5,6 +5,10 @@
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
 #include "Engine/DataTable.h"
+// UE 4.25 requires explicit includes for these types; they aren't pulled in
+// transitively like they are in 5.x.
+#include "Engine/SkeletalMesh.h"
+#include "Animation/AnimInstance.h"
 #include "CharacterDataTypes.generated.h"
 
 /**

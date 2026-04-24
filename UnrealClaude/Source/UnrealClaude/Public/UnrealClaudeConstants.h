@@ -102,7 +102,10 @@ namespace UnrealClaudeConstants
 		/** Characters that are dangerous in actor names, paths, and class paths
 		 *  Used for injection attack prevention and input sanitization
 		 */
-		inline constexpr const TCHAR* DangerousChars = TEXT("<>|&;`$(){}[]!*?~");
+		// C++14-compatible: namespace-scope `static constexpr` gives per-TU
+		// internal linkage, which is semantically equivalent for a read-only
+		// pointer-to-literal and avoids needing C++17 inline variables.
+		static constexpr const TCHAR* DangerousChars = TEXT("<>|&;`$(){}[]!*?~");
 
 		/** Maximum length for actor names */
 		constexpr int32 MaxActorNameLength = 256;
@@ -168,7 +171,10 @@ namespace UnrealClaudeConstants
 		constexpr int32 MaxRequestBodySize = 1024 * 1024;
 
 		/** Expected MCP tools that should be registered at startup */
-		inline const TArray<FString> ExpectedTools = {
+		// C++14 workaround: `static const` at namespace scope gives one copy per
+		// translation unit, acceptable for a read-only list. The C++17 `inline`
+		// variant would de-duplicate, but UE 4.25's default is C++14.
+		static const TArray<FString> ExpectedTools = {
 			// Actor tools
 			TEXT("spawn_actor"),
 			TEXT("get_level_actors"),
@@ -214,7 +220,7 @@ namespace UnrealClaudeConstants
 		constexpr double MaxScreenshotAgeSeconds = 3600.0;
 
 		/** Subdirectory under Saved/UnrealClaude/ for clipboard screenshots */
-		inline constexpr const TCHAR* ScreenshotSubdirectory = TEXT("screenshots");
+		static constexpr const TCHAR* ScreenshotSubdirectory = TEXT("screenshots");
 
 		/** Thumbnail preview size in the input area (pixels) */
 		constexpr float ThumbnailSize = 64.0f;

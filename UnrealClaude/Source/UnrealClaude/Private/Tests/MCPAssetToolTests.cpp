@@ -12,7 +12,7 @@
 #include "MCP/Tools/MCPTool_AssetDependencies.h"
 #include "MCP/Tools/MCPTool_AssetReferencers.h"
 #include "Dom/JsonObject.h"
-#include "AssetRegistry/AssetRegistryModule.h"
+#include "AssetRegistryModule.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 

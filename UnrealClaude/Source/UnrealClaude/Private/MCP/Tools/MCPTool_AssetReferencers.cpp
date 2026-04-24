@@ -1,8 +1,8 @@
 // Copyright Natali Caggiano. All Rights Reserved.
 
 #include "MCPTool_AssetReferencers.h"
-#include "AssetRegistry/AssetRegistryModule.h"
-#include "AssetRegistry/IAssetRegistry.h"
+#include "AssetRegistryModule.h"
+#include "IAssetRegistry.h"
 
 FMCPToolResult FMCPTool_AssetReferencers::Execute(const TSharedRef<FJsonObject>& Params)
 {

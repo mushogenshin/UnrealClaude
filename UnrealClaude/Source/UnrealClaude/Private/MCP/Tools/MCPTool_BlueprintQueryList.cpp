@@ -4,7 +4,7 @@
 #include "BlueprintUtils.h"
 #include "MCP/MCPParamValidator.h"
 #include "UnrealClaudeModule.h"
-#include "AssetRegistry/AssetRegistryModule.h"
+#include "AssetRegistryModule.h"
 #include "Engine/Blueprint.h"
 
 // --- Original operations (list, inspect, get_graph) split from MCPTool_BlueprintQuery.cpp ---

@@ -26,11 +26,15 @@ FMCPToolResult FMCPTool_ExecuteScript::Execute(const TSharedRef<FJsonObject>& Pa
 		return ExecuteSync(Params);
 	}
 
-	// Clone params and add _sync flag for when task queue executes
+	// Clone params and add _sync flag for when task queue executes.
+	// UE 4.25 has no static FJsonValue::Duplicate (added in 5.x). FJsonValue is
+	// immutable once constructed and SetField only stores the shared pointer,
+	// so sharing the same TSharedPtr<FJsonValue> between Params and AsyncParams
+	// is safe — no value is mutated after it's in the map.
 	TSharedPtr<FJsonObject> AsyncParams = MakeShared<FJsonObject>();
 	for (const auto& Field : Params->Values)
 	{
-		AsyncParams->SetField(Field.Key, FJsonValue::Duplicate(Field.Value));
+		AsyncParams->SetField(Field.Key, Field.Value);
 	}
 	AsyncParams->SetBoolField(TEXT("_sync"), true);
 

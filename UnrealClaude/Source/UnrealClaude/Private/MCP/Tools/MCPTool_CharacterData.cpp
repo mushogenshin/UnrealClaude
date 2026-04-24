@@ -7,7 +7,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine/DataTable.h"
-#include "AssetRegistry/AssetRegistryModule.h"
+#include "AssetRegistryModule.h"
 // UObject/SavePackage.h exists only in UE 5.0+; 4.25 uses UObject/Package.h transitively.
 #include "Engine/World.h"
 #include "EngineUtils.h"
@@ -93,7 +93,7 @@ FMCPToolResult FMCPTool_CharacterData::ExecuteCreateCharacterData(const TSharedR
 	FString FullPackagePath = PackagePath / AssetName;
 
 	// Create package
-	UPackage* Package = CreatePackage(*FullPackagePath);
+	UPackage* Package = CreatePackage(nullptr, *FullPackagePath);
 	if (!Package)
 	{
 		return FMCPToolResult::Error(FString::Printf(TEXT("Failed to create package: %s"), *FullPackagePath));
@@ -330,7 +330,7 @@ FMCPToolResult FMCPTool_CharacterData::ExecuteCreateStatsTable(const TSharedRef<
 
 	FString FullPackagePath = PackagePath / AssetName;
 
-	UPackage* Package = CreatePackage(*FullPackagePath);
+	UPackage* Package = CreatePackage(nullptr, *FullPackagePath);
 	if (!Package)
 	{
 		return FMCPToolResult::Error(FString::Printf(TEXT("Failed to create package: %s"), *FullPackagePath));

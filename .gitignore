@@ -1,3 +1,7 @@
+logs/
+Build_4.25/
+Build_5.7/
+
 # Unreal Engine Plugin .gitignore
 
 # Build outputs (but NOT plugin Binaries - those are needed for distribution)

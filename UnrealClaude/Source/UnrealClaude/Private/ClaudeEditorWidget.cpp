@@ -25,9 +25,50 @@
 #include "Widgets/SBoxPanel.h"
 #include "EditorStyleSet.h"
 #include "Styling/CoreStyle.h"
+#include "Styling/SlateTypes.h"
 #include "HAL/PlatformApplicationMisc.h"
 
 #define LOCTEXT_NAMESPACE "UnrealClaude"
+
+namespace
+{
+	// SMultiLineEditableText takes its color from a FTextBlockStyle pointer (no
+	// ColorAndOpacity attribute), so we keep one static style per color we need.
+	// The style outlives every widget that references it.
+	const FTextBlockStyle& GetSelectableMessageStyle()
+	{
+		static const FTextBlockStyle Style = []()
+		{
+			FTextBlockStyle S = FEditorStyle::Get().GetWidgetStyle<FTextBlockStyle>("NormalText");
+			S.SetColorAndOpacity(FLinearColor::White);
+			return S;
+		}();
+		return Style;
+	}
+
+	const FTextBlockStyle& GetSelectableToolResultStyle()
+	{
+		static const FTextBlockStyle Style = []()
+		{
+			FTextBlockStyle S = FEditorStyle::Get().GetWidgetStyle<FTextBlockStyle>("SmallText");
+			S.SetColorAndOpacity(FLinearColor(0.6f, 0.6f, 0.6f));
+			return S;
+		}();
+		return Style;
+	}
+
+	const FTextBlockStyle& GetSelectableCodeBlockStyle()
+	{
+		static const FTextBlockStyle Style = []()
+		{
+			FTextBlockStyle S = FEditorStyle::Get().GetWidgetStyle<FTextBlockStyle>("NormalText");
+			S.SetFont(FCoreStyle::GetDefaultFontStyle("Mono", 9));
+			S.SetColorAndOpacity(FLinearColor(0.8f, 0.85f, 0.75f));
+			return S;
+		}();
+		return Style;
+	}
+}
 
 // ============================================================================
 // SChatMessage
@@ -94,15 +135,16 @@ void SChatMessage::Construct(const FArguments& InArgs)
 					.ColorAndOpacity(FSlateColor(RoleLabelColor))
 				]
 
-				// Message content
+				// Message content (selectable + copyable)
 				+ SVerticalBox::Slot()
 				.AutoHeight()
 				[
-					SNew(STextBlock)
+					SNew(SMultiLineEditableText)
 					.Text(FText::FromString(Message))
-					.TextStyle(FEditorStyle::Get(), "NormalText")
-					.ColorAndOpacity(FSlateColor(TextColor))
+					.TextStyle(&GetSelectableMessageStyle())
 					.AutoWrapText(true)
+					.IsReadOnly(true)
+					.AllowMultiLine(true)
 				]
 			]
 		]
@@ -664,11 +706,12 @@ void SClaudeEditorWidget::StartStreamingResponse()
 			+ SVerticalBox::Slot()
 			.AutoHeight()
 			[
-				SAssignNew(StreamingTextBlock, STextBlock)
+				SAssignNew(StreamingTextBlock, SMultiLineEditableText)
 				.Text(FText::FromString(TEXT("Thinking...")))
-				.TextStyle(FEditorStyle::Get(), "NormalText")
-				.ColorAndOpacity(FSlateColor(FLinearColor::White))
+				.TextStyle(&GetSelectableMessageStyle())
 				.AutoWrapText(true)
+				.IsReadOnly(true)
+				.AllowMultiLine(true)
 			]
 		];
 
@@ -892,11 +935,12 @@ void SClaudeEditorWidget::HandleToolUseEvent(const FClaudeStreamEvent& Event)
 			+ SVerticalBox::Slot()
 			.AutoHeight()
 			[
-				SAssignNew(StreamingTextBlock, STextBlock)
+				SAssignNew(StreamingTextBlock, SMultiLineEditableText)
 				.Text(FText::GetEmpty())
-				.TextStyle(FEditorStyle::Get(), "NormalText")
-				.ColorAndOpacity(FSlateColor(FLinearColor::White))
+				.TextStyle(&GetSelectableMessageStyle())
 				.AutoWrapText(true)
+				.IsReadOnly(true)
+				.AllowMultiLine(true)
 			]
 		];
 
@@ -931,7 +975,7 @@ void SClaudeEditorWidget::HandleToolUseEvent(const FClaudeStreamEvent& Event)
 	ToolGroupCallIds.Add(Event.ToolCallId);
 
 	TSharedPtr<STextBlock> StatusLabel;
-	TSharedPtr<STextBlock> ResultText;
+	TSharedPtr<SMultiLineEditableText> ResultText;
 	TSharedPtr<SExpandableArea> ExpandArea;
 
 	ToolGroupInnerBox->AddSlot()
@@ -971,11 +1015,12 @@ void SClaudeEditorWidget::HandleToolUseEvent(const FClaudeStreamEvent& Event)
 				.BorderBackgroundColor(FLinearColor(0.06f, 0.06f, 0.06f, 1.0f))
 				.Padding(FMargin(8.0f, 6.0f))
 				[
-					SAssignNew(ResultText, STextBlock)
+					SAssignNew(ResultText, SMultiLineEditableText)
 					.Text(FText::GetEmpty())
-					.TextStyle(FEditorStyle::Get(), "SmallText")
-					.ColorAndOpacity(FSlateColor(FLinearColor(0.6f, 0.6f, 0.6f)))
+					.TextStyle(&GetSelectableToolResultStyle())
 					.AutoWrapText(true)
+					.IsReadOnly(true)
+					.AllowMultiLine(true)
 				]
 			]
 			.Visibility(EVisibility::Collapsed)
@@ -1010,7 +1055,7 @@ void SClaudeEditorWidget::HandleToolResultEvent(const FClaudeStreamEvent& Event)
 	}
 
 	// Set result text (truncated for display)
-	TSharedPtr<STextBlock>* ResultTextPtr = ToolCallResultTexts.Find(Event.ToolCallId);
+	TSharedPtr<SMultiLineEditableText>* ResultTextPtr = ToolCallResultTexts.Find(Event.ToolCallId);
 	if (ResultTextPtr && ResultTextPtr->IsValid())
 	{
 		FString ResultContent = Event.ToolResultContent;
@@ -1260,7 +1305,7 @@ void SClaudeEditorWidget::ParseAndRenderCodeBlocks()
 {
 	for (int32 i = 0; i < TextSegmentBlocks.Num() && i < TextSegmentContainers.Num(); ++i)
 	{
-		TSharedPtr<STextBlock> Block = TextSegmentBlocks[i];
+		TSharedPtr<SMultiLineEditableText> Block = TextSegmentBlocks[i];
 		TSharedPtr<SVerticalBox> Container = TextSegmentContainers[i];
 
 		if (!Block.IsValid() || !Container.IsValid())
@@ -1310,25 +1355,27 @@ void SClaudeEditorWidget::ParseAndRenderCodeBlocks()
 					.BorderBackgroundColor(FLinearColor(0.04f, 0.04f, 0.06f, 1.0f))
 					.Padding(FMargin(10.0f, 8.0f))
 					[
-						SNew(STextBlock)
+						SNew(SMultiLineEditableText)
 						.Text(FText::FromString(Section.Key))
-						.Font(FCoreStyle::GetDefaultFontStyle("Mono", 9))
-						.ColorAndOpacity(FSlateColor(FLinearColor(0.8f, 0.85f, 0.75f)))
+						.TextStyle(&GetSelectableCodeBlockStyle())
 						.AutoWrapText(true)
+						.IsReadOnly(true)
+						.AllowMultiLine(true)
 					]
 				];
 			}
 			else
 			{
-				// Plain text
+				// Plain text (selectable + copyable)
 				Container->AddSlot()
 				.AutoHeight()
 				[
-					SNew(STextBlock)
+					SNew(SMultiLineEditableText)
 					.Text(FText::FromString(Section.Key))
-					.TextStyle(FEditorStyle::Get(), "NormalText")
-					.ColorAndOpacity(FSlateColor(FLinearColor::White))
+					.TextStyle(&GetSelectableMessageStyle())
 					.AutoWrapText(true)
+					.IsReadOnly(true)
+					.AllowMultiLine(true)
 				];
 			}
 		}

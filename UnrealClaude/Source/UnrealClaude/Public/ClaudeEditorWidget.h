@@ -8,6 +8,7 @@
 #include "Widgets/DeclarativeSyntaxSupport.h"
 
 class SMultiLineEditableTextBox;
+class SMultiLineEditableText;
 class SScrollBox;
 class SVerticalBox;
 class SClaudeInputArea;
@@ -118,7 +119,7 @@ private:
 	FString StreamingResponse;
 
 	/** Current streaming message widget (for updating in place) */
-	TSharedPtr<STextBlock> StreamingTextBlock;
+	TSharedPtr<SMultiLineEditableText> StreamingTextBlock;
 
 	/** Inner content box for streaming bubble (holds text segments + tool indicators) */
 	TSharedPtr<SVerticalBox> StreamingContentBox;
@@ -130,7 +131,7 @@ private:
 	TMap<FString, TSharedPtr<STextBlock>> ToolCallStatusLabels;
 
 	/** Tool call result text blocks by call ID */
-	TMap<FString, TSharedPtr<STextBlock>> ToolCallResultTexts;
+	TMap<FString, TSharedPtr<SMultiLineEditableText>> ToolCallResultTexts;
 
 	/** Tool call expandable areas by call ID */
 	TMap<FString, TSharedPtr<SExpandableArea>> ToolCallExpandables;
@@ -142,7 +143,7 @@ private:
 	TArray<FString> AllTextSegments;
 
 	/** Text block widgets for each segment (for code block post-processing) */
-	TArray<TSharedPtr<STextBlock>> TextSegmentBlocks;
+	TArray<TSharedPtr<SMultiLineEditableText>> TextSegmentBlocks;
 
 	/** Container vertical boxes wrapping each text segment (for code block replacement) */
 	TArray<TSharedPtr<SVerticalBox>> TextSegmentContainers;

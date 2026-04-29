@@ -249,7 +249,7 @@ bool FScriptExecutionManager::TriggerLiveCodingCompile(FString& OutErrorLog)
 	GLog->AddOutputDevice(&OutputCapture);
 
 	// Trigger compilation
-	LiveCoding->Compile(ELiveCodingCompileFlags::None, nullptr);
+	LiveCoding->Compile();
 
 	// Wait for compilation with polling
 	float WaitTime = 0.0f;

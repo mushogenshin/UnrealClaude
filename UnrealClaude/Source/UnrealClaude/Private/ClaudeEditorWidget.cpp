@@ -300,7 +300,7 @@ TSharedRef<SWidget> SClaudeEditorWidget::BuildStatusBar()
 				SNew(STextBlock)
 				.Text_Lambda([]() -> FText {
 					FString ProjectPath = FPaths::ConvertRelativePathToFull(FPaths::GetProjectFilePath());
-					FString HomeDir = FPlatformProcess::UserHomeDir();
+					FString HomeDir = FPlatformProcess::UserDir();
 					// Normalize: strip any trailing slashes so the replacement is consistent
 					// regardless of whether UserHomeDir() returns "/Users/x" or "/Users/x/"
 					while (HomeDir.EndsWith(TEXT("/")))

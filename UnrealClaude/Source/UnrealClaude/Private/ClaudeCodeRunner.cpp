@@ -22,6 +22,20 @@
 #include "Policies/CondensedJsonPrintPolicy.h"
 #include "Dom/JsonObject.h"
 
+#if PLATFORM_WINDOWS
+// UE 4.25 CreatePipe() marks the ReadPipe as non-inheritable (for stdout
+// that's correct — the parent reads). But for stdin the CHILD needs to
+// inherit the read end, so flip the inheritability: make StdInReadPipe
+// inheritable and StdInWritePipe (parent's end) non-inheritable.
+#include "Windows/AllowWindowsPlatformTypes.h"
+static void FixStdInPipeInheritance(void* InReadPipe, void* InWritePipe)
+{
+	::SetHandleInformation(InReadPipe, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+	::SetHandleInformation(InWritePipe, HANDLE_FLAG_INHERIT, 0);
+}
+#include "Windows/HideWindowsPlatformTypes.h"
+#endif
+
 FClaudeCodeRunner::FClaudeCodeRunner()
 	: Thread(nullptr)
 	, bIsExecuting(false)
@@ -1215,6 +1229,10 @@ bool FClaudeCodeRunner::CreateProcessPipes()
 		WritePipe = nullptr;
 		return false;
 	}
+
+#if PLATFORM_WINDOWS
+	FixStdInPipeInheritance(StdInReadPipe, StdInWritePipe);
+#endif
 
 	return true;
 }

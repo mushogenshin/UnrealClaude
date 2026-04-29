@@ -17,7 +17,9 @@ attrib -R "D:\projects\GUILTY-GEAR-Strive-P4\Dev\Engine\Platforms\*" /S /D 2>nul
 attrib -R "D:\projects\GUILTY-GEAR-Strive-P4\Dev\Engine\Source\Programs\*" /S /D 2>nul
 
 :: Suppress MSVC warnings that UE 4.25 engine code triggers with newer VS toolchains
+:: CL is prepended to cl.exe args, _CL_ is appended (gets final precedence over /WX)
 set CL=/wd4800 /wd5038 /wd4458
+set _CL_=/wd4800 /wd5038 /wd4458
 
 call "D:\projects\GUILTY-GEAR-Strive-P4\Dev\Engine\Build\BatchFiles\RunUAT.bat" BuildPlugin -Plugin="D:\projects\UnrealClaude\UnrealClaude\UnrealClaude.uplugin" -Package="D:\projects\UnrealClaude\Build_4.25" -TargetPlatforms=Win64
 
